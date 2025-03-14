@@ -1,0 +1,98 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           space-station15
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/space-station15#readme>
+homepage:       https://github.com/githubuser/space-station15#readme
+bug-reports:    https://github.com/githubuser/space-station15/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2025 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/space-station15
+
+library
+  other-modules:
+      Paths_space_station15
+  autogen-modules:
+      Paths_space_station15
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -XTypeFamilies
+  build-depends:
+      aeson
+    , apecs
+    , base >=4.7 && <5
+    , containers
+    , hslua
+    , linear
+    , network
+    , sdl2
+    , sdl2-image
+    , sdl2-ttf
+  default-language: Haskell2010
+
+executable space-station15-client
+  main-is: Main.hs
+  other-modules:
+      Server.World
+      Shared.Components.Position
+      Paths_space_station15
+  autogen-modules:
+      Paths_space_station15
+  hs-source-dirs:
+      app/server
+      src/server
+      src/shared
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -XTypeFamilies -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , apecs
+    , base >=4.7 && <5
+    , containers
+    , hslua
+    , linear
+    , network
+    , sdl2
+    , sdl2-image
+    , sdl2-ttf
+    , space-station15
+  default-language: Haskell2010
+
+executable space-station15-server
+  main-is: Main.hs
+  other-modules:
+      Shared.Components.Position
+      Paths_space_station15
+  autogen-modules:
+      Paths_space_station15
+  hs-source-dirs:
+      app/client
+      src/client
+      src/shared
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -XTypeFamilies -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , apecs
+    , base >=4.7 && <5
+    , containers
+    , hslua
+    , linear
+    , network
+    , sdl2
+    , sdl2-image
+    , sdl2-ttf
+    , space-station15
+  default-language: Haskell2010
