@@ -53,14 +53,14 @@ ghc-options:
 - -XGeneralizedNewtypeDeriving
 
 library:
-  source-dirs: src/data
+  source-dirs: src/lib
 
 executables:
   space-station15-client:
     main:                Main.hs
     source-dirs:
-    - app/server
-    - src/server
+    - app/client
+    - src/client
     - src/shared
     ghc-options:
     - -threaded
@@ -72,8 +72,8 @@ executables:
   space-station15-server:
     main:                Main.hs
     source-dirs:
-    - app/client
-    - src/client
+    - app/server
+    - src/server
     - src/shared
     ghc-options:
     - -threaded

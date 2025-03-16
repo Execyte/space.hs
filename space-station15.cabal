@@ -29,7 +29,7 @@ library
   autogen-modules:
       Paths_space_station15
   hs-source-dirs:
-      src/data
+      src/lib
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -XTypeFamilies -XDataKinds -XFlexibleContexts -XFlexibleInstances -XMultiParamTypeClasses -XScopedTypeVariables -XTemplateHaskell -XTypeApplications -XGeneralizedNewtypeDeriving
   build-depends:
       aeson
@@ -48,14 +48,14 @@ library
 executable space-station15-client
   main-is: Main.hs
   other-modules:
-      Server.World
+      Client.Components.Visual
       Shared.Components.Position
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
   hs-source-dirs:
-      app/server
-      src/server
+      app/client
+      src/client
       src/shared
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -XTypeFamilies -XDataKinds -XFlexibleContexts -XFlexibleInstances -XMultiParamTypeClasses -XScopedTypeVariables -XTemplateHaskell -XTypeApplications -XGeneralizedNewtypeDeriving -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -76,14 +76,14 @@ executable space-station15-client
 executable space-station15-server
   main-is: Main.hs
   other-modules:
-      Client.Components.Visual
+      Server.World
       Shared.Components.Position
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
   hs-source-dirs:
-      app/client
-      src/client
+      app/server
+      src/server
       src/shared
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -XTypeFamilies -XDataKinds -XFlexibleContexts -XFlexibleInstances -XMultiParamTypeClasses -XScopedTypeVariables -XTemplateHaskell -XTypeApplications -XGeneralizedNewtypeDeriving -threaded -rtsopts -with-rtsopts=-N
   build-depends:
