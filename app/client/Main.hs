@@ -19,7 +19,8 @@ vertices :: Vector Float
 vertices = Vector.fromList [
     -0.5, -0.5,
     0.5, -0.5,
-    0.0, 0.5
+    -0.5, 0.5,
+    0.5, 0.5
     ]
 
 vertexSource :: ByteString
@@ -91,7 +92,7 @@ main = do
             Vector.unsafeWith vertices $ \pointer ->
                 GL.vertexAttribPointer (GL.AttribLocation 0) $=
                     (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 0 pointer)
-            GL.drawArrays GL.Triangles 0 3
+            GL.drawArrays GL.TriangleStrip 0 4
             GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Disabled
             SDL.glSwapWindow window
 
