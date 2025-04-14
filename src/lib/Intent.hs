@@ -13,4 +13,4 @@ data Intent =
   | Use Entity
   | LookAt Entity
   | Move Direction
-  deriving Show
+  deriving (Eq, Show)

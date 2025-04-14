@@ -51,6 +51,7 @@ library
       TemplateHaskell
       TypeApplications
       GeneralizedNewtypeDeriving
+      OverloadedStrings
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       OpenAL
@@ -76,7 +77,7 @@ executable space-station15-client
   main-is: Main.hs
   other-modules:
       Client.Components.Visual
-      Client.Renderer.Transform
+      Client.Renderer
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
@@ -93,6 +94,7 @@ executable space-station15-client
       TemplateHaskell
       TypeApplications
       GeneralizedNewtypeDeriving
+      OverloadedStrings
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       OpenAL
@@ -135,6 +137,7 @@ executable space-station15-server
       TemplateHaskell
       TypeApplications
       GeneralizedNewtypeDeriving
+      OverloadedStrings
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       OpenAL

@@ -64,6 +64,7 @@ default-extensions:
 - TemplateHaskell
 - TypeApplications
 - GeneralizedNewtypeDeriving
+- OverloadedStrings
 
 executables:
   space-station15-client:

@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
 import System.IO
@@ -18,6 +17,8 @@ import Intent (Intent)
 import qualified Intent
 import qualified Direction
 import Linear
+import Client.Renderer (Renderer)
+import qualified Client.Renderer as Renderer
 
 {-
   RENDERING
@@ -66,10 +67,10 @@ action :: Intent -> IO ()
 action Intent.Quit = exitSuccess
 action _ = pure ()
 
-getKey :: SDL.KeyboardEventData -> Maybe Intent
-getKey (SDL.KeyboardEventData _ SDL.Released _ _) = Nothing
-getKey (SDL.KeyboardEventData _ SDL.Pressed True _) = Nothing
-getKey (SDL.KeyboardEventData _ SDL.Pressed False keysym) =
+intentFromKey :: SDL.KeyboardEventData -> Maybe Intent
+intentFromKey (SDL.KeyboardEventData _ SDL.Released _ _) = Nothing
+intentFromKey (SDL.KeyboardEventData _ SDL.Pressed True _) = Nothing
+intentFromKey (SDL.KeyboardEventData _ SDL.Pressed False keysym) = Just $
   case SDL.keysymKeycode keysym of
     SDL.KeycodeEscape -> Intent.Quit
     SDL.KeycodeW -> Intent.Move Direction.Up
@@ -78,20 +79,36 @@ getKey (SDL.KeyboardEventData _ SDL.Pressed False keysym) =
     SDL.KeycodeD -> Intent.Move Direction.Right
     _ -> Intent.Wait
 
-mapKeysToIntent :: [SDL.Event] -> [Intent]
-mapKeysToIntent = mapMaybe (payloadToIntent . SDL.eventPayload)
+eventsToIntents :: [SDL.Event] -> [Intent]
+eventsToIntents = mapMaybe (payloadToIntent . SDL.eventPayload)
   where
     payloadToIntent :: SDL.EventPayload -> Maybe Intent
-    payloadToIntent (SDL.KeyboardEvent k)       = getKey k
-    payloadToIntent SDL.QuitEvent               = Just Quit
+    payloadToIntent (SDL.KeyboardEvent k)       = intentFromKey k
+    payloadToIntent SDL.QuitEvent               = Just Intent.Quit
     payloadToIntent _                           = Nothing
 
-loop :: IO () -> [Intent]
-loop = do
+loop :: Renderer -> IO ()
+loop renderer = do
+  let
+    window = Renderer.window renderer
+    program = Renderer.program renderer
+
   events <- SDL.pollEvents
-  putStrLn events
-  keys <- mapKeysToIntent events
-  keys
+  let intents = eventsToIntents events
+
+  let quit = elem Intent.Quit intents
+
+  GL.clear [GL.ColorBuffer]
+  GL.currentProgram $= Just program
+  GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
+  Vector.unsafeWith vertices $ \pointer ->
+    GL.vertexAttribPointer (GL.AttribLocation 0) $=
+      (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 0 pointer)
+  GL.drawArrays GL.TriangleStrip 0 4
+  GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Disabled
+  SDL.glSwapWindow window
+
+  unless quit (loop renderer)
 
 {-
   MAIN
@@ -124,25 +141,13 @@ main = do
   unless (linked && valid) $ do
     hPutStrLn stderr "stupid program error!!!"
     exitFailure
+  
+  let renderer = Renderer.Renderer {
+    Renderer.window = window,
+    Renderer.program = program
+  }
 
-  let
-    loop = do
-      events <- map SDL.eventPayload <$> SDL.pollEvents
-      let quit = SDL.QuitEvent `elem` events
-
-      GL.clear [GL.ColorBuffer]
-      GL.currentProgram $= Just program
-      GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
-      Vector.unsafeWith vertices $ \pointer ->
-        GL.vertexAttribPointer (GL.AttribLocation 0) $=
-          (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 0 pointer)
-      GL.drawArrays GL.TriangleStrip 0 4
-      GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Disabled
-      SDL.glSwapWindow window
-
-      unless quit loop
-    
-  loop
+  loop renderer
 
   SDL.destroyWindow window
   SDL.quit
