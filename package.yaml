@@ -21,6 +21,9 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- bytestring
+- vector
+- lens
 - sdl2
 - sdl2-image
 - sdl2-ttf
@@ -61,6 +64,7 @@ default-extensions:
 - TemplateHaskell
 - TypeApplications
 - GeneralizedNewtypeDeriving
+- OverloadedStrings
 
 executables:
   space-station15-client:

@@ -51,6 +51,7 @@ library
       TemplateHaskell
       TypeApplications
       GeneralizedNewtypeDeriving
+      OverloadedStrings
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       OpenAL
@@ -58,8 +59,10 @@ library
     , aeson
     , apecs
     , base >=4.7 && <5
+    , bytestring
     , containers
     , hslua
+    , lens
     , linear
     , network
     , random
@@ -67,12 +70,14 @@ library
     , sdl2-image
     , sdl2-ttf
     , text
+    , vector
   default-language: Haskell2010
 
 executable space-station15-client
   main-is: Main.hs
   other-modules:
       Client.Components.Visual
+      Client.Renderer
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
@@ -89,6 +94,7 @@ executable space-station15-client
       TemplateHaskell
       TypeApplications
       GeneralizedNewtypeDeriving
+      OverloadedStrings
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       OpenAL
@@ -96,8 +102,10 @@ executable space-station15-client
     , aeson
     , apecs
     , base >=4.7 && <5
+    , bytestring
     , containers
     , hslua
+    , lens
     , linear
     , network
     , random
@@ -106,6 +114,7 @@ executable space-station15-client
     , sdl2-ttf
     , space-station15
     , text
+    , vector
   default-language: Haskell2010
 
 executable space-station15-server
@@ -128,6 +137,7 @@ executable space-station15-server
       TemplateHaskell
       TypeApplications
       GeneralizedNewtypeDeriving
+      OverloadedStrings
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       OpenAL
@@ -135,8 +145,10 @@ executable space-station15-server
     , aeson
     , apecs
     , base >=4.7 && <5
+    , bytestring
     , containers
     , hslua
+    , lens
     , linear
     , network
     , random
@@ -145,4 +157,5 @@ executable space-station15-server
     , sdl2-ttf
     , space-station15
     , text
+    , vector
   default-language: Haskell2010
