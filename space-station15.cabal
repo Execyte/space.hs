@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Comms
+      Direction
+      Intent
       Material
       Shared.Components.Atmos
       Shared.Components.Damage

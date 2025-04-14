@@ -1,7 +1,6 @@
-module Shared.Components.Atmos( Gas(..)
-  , Mixture(..)
-  , Reaction(..)
-  , GasInstance(..)
+module Shared.Components.Atmos( Mixture(..)
+  , ReactionDef(..)
+  , Gas(..)
   , AtmosContainer(..)
   , Temperature(..)
   , oxygen, nitrogen, hydrogen, waterVapor
@@ -15,27 +14,31 @@ type Mol = Float
 type Name = String
 type MolecularIdentifier = String
 type HeatCapacity = Float
+type Temp = Float
 
-data Gas = Gas Name MolecularIdentifier HeatCapacity deriving Eq
+data GasDef = GasDef Name MolecularIdentifier HeatCapacity deriving Eq
 
-instance Show Gas where
-  show (Gas x y _) = x ++ " (" ++ y ++ ")"
+instance Show GasDef where
+  show (GasDef x y _) = x ++ " (" ++ y ++ ")"
 
-type Factor = Gas -- gas factors required for a gas reaction to be present.
+type Factor = GasDef -- gas factors required for a gas reaction to be present.
 
-data Reaction = Reaction Name [Factor] deriving (Eq, Show)
+data ReactionDef = ReactionDef Name [Factor] deriving (Eq, Show)
 
-data GasInstance = GasInstance Gas Mol deriving Show
+data Gas = Gas GasDef Mol Temp deriving Show
 
 data Mixture = Mixture { volume :: Float -- liters
-  , temperature :: Float -- kelvin
-  , pressure :: Float -- pascals
-  , energy :: Float -- joules
-  , gases :: [GasInstance]
-  , reactions :: [Reaction]
+  , temperature :: Float -- kelvin (total temperature of the mixture)
+  , pressure :: Float -- pascals (total pressure of the mixture)
+  , energy :: Float -- joules (total energy of the mixture)
+  , heat_capacity :: Float -- total heat capacity of the mixture
+  , gases :: [Gas]
+  , reactions :: [ReactionDef]
   } deriving Show
 
-newtype AtmosContainer = AtmosContainer Mixture deriving Show
+type PressureCap = Float
+
+data AtmosContainer = AtmosContainer PressureCap Mixture deriving Show
 instance Component AtmosContainer where type Storage AtmosContainer = Map AtmosContainer
 
 newtype Temperature = Temperature Float deriving Show
@@ -49,20 +52,20 @@ instance Component AtmosVoid where type Storage AtmosVoid = Map AtmosVoid
 
 -- TODO: add more GAS reactions, actually write the atmos system
 
-oxygen :: Gas
-oxygen = Gas "Oxygen" "O2" 0 -- no idea abt heat capacity
+oxygen :: GasDef
+oxygen = GasDef "Oxygen" "O2" 0 -- no idea abt heat capacity
 
-nitrogen :: Gas
-nitrogen = Gas "Nitrogen" "N2" 0
+nitrogen :: GasDef
+nitrogen = GasDef "Nitrogen" "N2" 0
 
-hydrogen :: Gas
-hydrogen = Gas "Hydrogen" "H2" 0
+hydrogen :: GasDef
+hydrogen = GasDef "Hydrogen" "H2" 0
 
-waterVapor :: Gas
-waterVapor = Gas "Water Vapor" "H2O" 0
+waterVapor :: GasDef
+waterVapor = GasDef "Water Vapor" "H2O" 0
 
-hydrogenFire :: Reaction
-hydrogenFire = Reaction "Hydrogen Fire" [oxygen, hydrogen] -- Burning hydrogen becomes water.
+hydrogenFire :: ReactionDef
+hydrogenFire = ReactionDef "Hydrogen Fire" [oxygen, hydrogen] -- Burning hydrogen becomes water.
 
-waterVaporCondensation :: Reaction
-waterVaporCondensation = Reaction "Water Vapor Condensation" [waterVapor] -- Water vapor, when below a certain arbitrary temperature at varying pressures, becomes normal water.
+waterVaporCondensation :: ReactionDef
+waterVaporCondensation = ReactionDef "Water Vapor Condensation" [waterVapor] -- Water vapor, when below a certain arbitrary temperature at varying pressures, becomes normal water.
