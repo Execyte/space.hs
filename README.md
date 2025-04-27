@@ -12,19 +12,25 @@ Space Station 15 is a remake of Space Station 13 built from scratch in Haskell, 
 **NOTE:** This method of building currently does not work.
 
 1. Install SDL2 and OpenAL using this command:
+    
     ```
     stack exec -- pacman -S mingw-w64-x86_64-pkgconf mingw-w64-x86_64-SDL2 mingw-w64-x86_64-openal
     ```
+    
     **NOTE:** If you already had Stack installed, you might want to update the package index first with the following commands:
+
     ```
     stack exec -- pacman -Sy msys2-keyring
     stack exec -- pacman -Syu
     ```
-2. To build, run:
+3. To build, run:
+
     ```
     stack build
     ```
+    
     This will produce two executables: `space-station15-client` and `space-station15-server`. Run them with the command:
+
     ```
     stack exec [executable name]
     ```
@@ -35,10 +41,13 @@ macOS is not supported at this moment. Help with building on macOS would be appr
 ## Linux
 1. Install development libraries for SDL2 and OpenAL with your package manager.
 2. To build, run:
+    
     ```
     stack build
     ```
+    
     This will produce two executables: `space-station15-client` and `space-station15-server`. Run them with the command:
+
     ```
     stack exec [executable name]
     ```
