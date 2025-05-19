@@ -2,8 +2,15 @@ module Shared.Components.Damage( Damage(..), DamageType(..), DamageModifier(..) 
 
 import Apecs
 
+-- | type of damage of the following:
+-- Slash, Blunt and Pierce - Brute
+-- Radiation, Causitc, Heat, Cold, Shock - Burn
+-- Poison - Toxin
+-- Integral - Structural
+-- Bloodloss, Asphyxiation - Airloss
+-- Nerve, Stamina, Genetic, Bleeding - General
 data DamageType =
-    Slash | Blunt | Piercing -- Brute
+    Slash | Blunt | Pierce -- Brute
   | Radiation | Caustic | Heat | Cold | Shock -- Burn
   | Poison -- Toxin
   | Integral -- Structural
@@ -11,8 +18,11 @@ data DamageType =
   | Nerve | Stamina | Genetic | Bleeding -- General
   deriving (Eq, Show)
 
-data DamageModifier = DamageModifier DamageType Int deriving (Eq, Show)
+data DamageModifier =
+  DamageModifier
+    DamageType -- ^ type of damage to modify
+    Int -- ^ precentage from 0 - 100
+  deriving (Eq, Show)
 
-type Source = Entity
-newtype Damage = Damage [(DamageType, Float, Source)] deriving Show
+newtype Damage = Damage [(DamageType, Float, Entity)] deriving Show
 instance Component Damage where type Storage Damage = Map Damage

@@ -56,7 +56,25 @@ ghc-options:
 
 default-extensions:
 - TypeFamilies
+- TypeFamilyDependencies
+- BangPatterns
+- KindSignatures
+- TypeOperators
 - DataKinds
+- QuasiQuotes
+- InstanceSigs
+- EmptyCase
+- LambdaCase
+- MultiWayIf
+- NamedFieldPuns
+- TupleSections
+- DeriveFoldable
+- DeriveFunctor
+- DeriveGeneric
+- DeriveLift
+- DeriveTraversable
+- DerivingStrategies
+- StandaloneDeriving
 - FlexibleContexts
 - FlexibleInstances
 - MultiParamTypeClasses
@@ -65,6 +83,13 @@ default-extensions:
 - TypeApplications
 - GeneralizedNewtypeDeriving
 - OverloadedStrings
+- ConstraintKinds
+- RankNTypes
+- DefaultSignatures
+- PatternSynonyms
+- ExistentialQuantification
+- FunctionalDependencies
+- GADTs
 
 executables:
   space-station15-client:

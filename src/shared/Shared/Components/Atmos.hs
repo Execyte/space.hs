@@ -8,49 +8,49 @@ module Shared.Components.Atmos( Mixture(..)
   ) where
 
 import Apecs
+import Data.Text (Text, pack, unpack)
 
 type Mol = Float
 
-type Name = String
-type MolecularIdentifier = String
-type HeatCapacity = Float
-type Temp = Float
-
-data GasDef = GasDef Name MolecularIdentifier HeatCapacity deriving Eq
+data GasDef = GasDef Text Text Float deriving Eq
 
 instance Show GasDef where
-  show (GasDef x y _) = x ++ " (" ++ y ++ ")"
+  show (GasDef x y _) = unpack $ x <> (pack " (") <> y <> (pack ")")
 
-type Factor = GasDef -- gas factors required for a gas reaction to be present.
+-- | gas factors required for a gas reaction to be present.
+type Factor = GasDef
 
-data ReactionDef = ReactionDef Name [Factor] deriving (Eq, Show)
+data ReactionDef = ReactionDef Text [Factor] deriving (Eq, Show)
 
-data Gas = Gas GasDef Mol Temp deriving Show
+data Gas = Gas GasDef Mol Double deriving Show
 
-data Mixture = Mixture { volume :: Float -- liters
-  , temperature :: Float -- kelvin (total temperature of the mixture)
-  , pressure :: Float -- pascals (total pressure of the mixture)
-  , energy :: Float -- joules (total energy of the mixture)
-  , heat_capacity :: Float -- total heat capacity of the mixture
+data Mixture = Mixture { volume :: Double -- ^ liters
+  , temperature :: Double -- ^ kelvin
+  , pressure :: Double -- ^ pascals
+  , energy :: Double -- ^ joules
+  , heat_capacity :: Float -- ^ total heat capacity
   , gases :: [Gas]
   , reactions :: [ReactionDef]
   } deriving Show
 
-type PressureCap = Float
+data AtmosContainer =
+  AtmosContainer
+    Double -- ^ pressure cap
+    Mixture
+  deriving Show
 
-data AtmosContainer = AtmosContainer PressureCap Mixture deriving Show
 instance Component AtmosContainer where type Storage AtmosContainer = Map AtmosContainer
 
-newtype Temperature = Temperature Float deriving Show
+-- | temperature of entities
+newtype Temperature = Temperature Double deriving Show
 instance Component Temperature where type Storage Temperature = Map Temperature
 
-data AtmosVoid = AtmosVoid deriving Show -- atmospherics flag to instantly wipe all gases in the mixture
-instance Component AtmosVoid where type Storage AtmosVoid = Map AtmosVoid
--- we don't ACTUALLY need this for space, as the logic already checks if there are any tile layers available on that tile when trying to transfer to it
--- if there are any tile layers, it will check if gases can pass through that layer, if not, it'll successfully be able to transfer, if yes, it will void the gas.
--- this is just for things such as special kinds of items like vents and such.
+data AtmosFlag =
+  AtmosVoid -- ^ atmospherics flag to instantly wipe all gases in the mixture.
+  deriving Show
 
--- TODO: add more GAS reactions, actually write the atmos system
+newtype AtmosFlags = AtmosFlags { unAtmosFlags :: [AtmosFlag] }
+instance Component AtmosFlags where type Storage AtmosFlags = Map AtmosFlags
 
 oxygen :: GasDef
 oxygen = GasDef "Oxygen" "O2" 0 -- no idea abt heat capacity
@@ -64,8 +64,10 @@ hydrogen = GasDef "Hydrogen" "H2" 0
 waterVapor :: GasDef
 waterVapor = GasDef "Water Vapor" "H2O" 0
 
+-- | Burning hydrogen becomes water.
 hydrogenFire :: ReactionDef
-hydrogenFire = ReactionDef "Hydrogen Fire" [oxygen, hydrogen] -- Burning hydrogen becomes water.
+hydrogenFire = ReactionDef "Hydrogen Fire" [oxygen, hydrogen] 
 
+-- | Water vapor, when below a certain arbitrary temperature at varying pressures, becomes normal water.
 waterVaporCondensation :: ReactionDef
-waterVaporCondensation = ReactionDef "Water Vapor Condensation" [waterVapor] -- Water vapor, when below a certain arbitrary temperature at varying pressures, becomes normal water.
+waterVaporCondensation = ReactionDef "Water Vapor Condensation" [waterVapor] 

@@ -1,22 +1,18 @@
-module Shared.Components.Physics(Position(..), Velocity(..), Collidable(..)) where
+module Shared.Components.Physics(Transform(..), LinearVelocity(..), Collidable(..)) where
 
 import Linear
 import Apecs
 
--- so BASICALLY like, we have the positions and like
--- when a player moves, we interpolate the position and wait for it to finish
--- we can keep everything fresh and pixel-based basically
--- but at the same time collision code will still check for rounded values unless it's a projectile
+import Data.Int (Int64)
 
--- interpolation defined at Shared.Components.Animation (TODO)
+-- | V3 because z layers.
+-- Int64 - tile based supremacy.
+newtype Transform = Transform (V3 Int64) deriving Show
+instance Component Transform where type Storage Transform = Map Transform
 
--- V3 because z layers.
+newtype LinearVelocity = LinearVelocity (V3 Int64) deriving Show
+instance Component LinearVelocity where type Storage LinearVelocity = Map LinearVelocity
 
-newtype Position = Position (V3 Double) deriving Show
-instance Component Position where type Storage Position = Map Position
-
-newtype Velocity = Velocity (V3 Double) deriving Show
-instance Component Velocity where type Storage Velocity = Map Velocity
-
+-- | allows an object to collide into other objects
 data Collidable = Collidable deriving Show
 instance Component Collidable where type Storage Collidable = Map Collidable

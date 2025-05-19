@@ -9,6 +9,9 @@ data MovementState =
   | Proning
   deriving (Eq, Show)
 
-type Speed = Float -- this is actually the interpolation speed and how long it takes before the mob can move again.
-data Movable = Movable MovementState Speed deriving Show
+data Movable =
+  Movable
+    MovementState -- ^ state of moving
+    Float -- ^ movement speed
+  deriving Show
 instance Component Movable where type Storage Movable = Map Movable

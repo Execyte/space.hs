@@ -43,7 +43,25 @@ library
       src/shared
   default-extensions:
       TypeFamilies
+      TypeFamilyDependencies
+      BangPatterns
+      KindSignatures
+      TypeOperators
       DataKinds
+      QuasiQuotes
+      InstanceSigs
+      EmptyCase
+      LambdaCase
+      MultiWayIf
+      NamedFieldPuns
+      TupleSections
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DeriveTraversable
+      DerivingStrategies
+      StandaloneDeriving
       FlexibleContexts
       FlexibleInstances
       MultiParamTypeClasses
@@ -52,6 +70,13 @@ library
       TypeApplications
       GeneralizedNewtypeDeriving
       OverloadedStrings
+      ConstraintKinds
+      RankNTypes
+      DefaultSignatures
+      PatternSynonyms
+      ExistentialQuantification
+      FunctionalDependencies
+      GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       JuicyPixels
@@ -87,7 +112,25 @@ executable space-station15-client
       src/client
   default-extensions:
       TypeFamilies
+      TypeFamilyDependencies
+      BangPatterns
+      KindSignatures
+      TypeOperators
       DataKinds
+      QuasiQuotes
+      InstanceSigs
+      EmptyCase
+      LambdaCase
+      MultiWayIf
+      NamedFieldPuns
+      TupleSections
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DeriveTraversable
+      DerivingStrategies
+      StandaloneDeriving
       FlexibleContexts
       FlexibleInstances
       MultiParamTypeClasses
@@ -96,51 +139,13 @@ executable space-station15-client
       TypeApplications
       GeneralizedNewtypeDeriving
       OverloadedStrings
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      JuicyPixels
-    , OpenAL
-    , OpenGL
-    , StateVar
-    , aeson
-    , apecs
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , dear-imgui
-    , lens
-    , linear
-    , network
-    , random
-    , sdl2
-    , space-station15
-    , text
-    , vector
-  default-language: Haskell2010
-
-executable space-station15-editor
-  main-is: Main.hs
-  other-modules:
-      Client.Components.Visual
-      Client.Renderer
-      Client.Renderer.Shader
-      Paths_space_station15
-  autogen-modules:
-      Paths_space_station15
-  hs-source-dirs:
-      app/editor
-      src/client
-  default-extensions:
-      TypeFamilies
-      DataKinds
-      FlexibleContexts
-      FlexibleInstances
-      MultiParamTypeClasses
-      ScopedTypeVariables
-      TemplateHaskell
-      TypeApplications
-      GeneralizedNewtypeDeriving
-      OverloadedStrings
+      ConstraintKinds
+      RankNTypes
+      DefaultSignatures
+      PatternSynonyms
+      ExistentialQuantification
+      FunctionalDependencies
+      GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
@@ -175,7 +180,25 @@ executable space-station15-server
       src/server
   default-extensions:
       TypeFamilies
+      TypeFamilyDependencies
+      BangPatterns
+      KindSignatures
+      TypeOperators
       DataKinds
+      QuasiQuotes
+      InstanceSigs
+      EmptyCase
+      LambdaCase
+      MultiWayIf
+      NamedFieldPuns
+      TupleSections
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveLift
+      DeriveTraversable
+      DerivingStrategies
+      StandaloneDeriving
       FlexibleContexts
       FlexibleInstances
       MultiParamTypeClasses
@@ -184,6 +207,13 @@ executable space-station15-server
       TypeApplications
       GeneralizedNewtypeDeriving
       OverloadedStrings
+      ConstraintKinds
+      RankNTypes
+      DefaultSignatures
+      PatternSynonyms
+      ExistentialQuantification
+      FunctionalDependencies
+      GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
