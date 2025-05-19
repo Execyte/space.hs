@@ -1,5 +1,7 @@
+-- | Contains all the parts of the atmos system
 module Shared.Components.Atmos( Mixture(..)
   , ReactionDef(..)
+  , GasDef(..)
   , Gas(..)
   , AtmosContainer(..)
   , Temperature(..)
@@ -10,33 +12,44 @@ module Shared.Components.Atmos( Mixture(..)
 import Apecs
 import Data.Text (Text, pack, unpack)
 
-type Mol = Float
-
-data GasDef = GasDef Text Text Float deriving Eq
+-- | definition of a gas
+data GasDef = GasDef
+  Text -- ^ gas name (Hydrogen)
+  Text -- ^ molecular gas name (H₂)
+  Float -- ^ specific heat capacity
+  deriving Eq
 
 instance Show GasDef where
   show (GasDef x y _) = unpack $ x <> (pack " (") <> y <> (pack ")")
 
--- | gas factors required for a gas reaction to be present.
-type Factor = GasDef
+-- | definition of a reaction type
+data ReactionDef =
+  ReactionDef
+    Text -- ^ name of the reaction
+    [GasDef] -- ^ gas factors of this reaction
+  deriving (Eq, Show)
 
-data ReactionDef = ReactionDef Text [Factor] deriving (Eq, Show)
+-- | definition of a gas instance
+data Gas = Gas
+  GasDef -- ^ type of gas
+  Double -- ^ amount of mols
+  Double -- ^ 
+  deriving Show
 
-data Gas = Gas GasDef Mol Double deriving Show
-
+-- | a mixture that contains gases and calculates reactions
 data Mixture = Mixture { volume :: Double -- ^ liters
   , temperature :: Double -- ^ kelvin
   , pressure :: Double -- ^ pascals
   , energy :: Double -- ^ joules
   , heat_capacity :: Float -- ^ total heat capacity
-  , gases :: [Gas]
-  , reactions :: [ReactionDef]
+  , gases :: [Gas] -- ^ list of gases in the mixture
+  , reactions :: [ReactionDef] -- ^ list of reactions present in the mixture
   } deriving Show
 
 data AtmosContainer =
   AtmosContainer
     Double -- ^ pressure cap
-    Mixture
+    Mixture -- ^ mixture of this container
   deriving Show
 
 instance Component AtmosContainer where type Storage AtmosContainer = Map AtmosContainer

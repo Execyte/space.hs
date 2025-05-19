@@ -7,12 +7,14 @@ module Shared.Components.Tiles
 import Data.Text (Text)
 import Shared.Components.Damage
 
+import Material
+
 data TileLayer =
   TileLayer
     Text -- ^ name of the layer
     Float -- ^ integrity of the layer
     [TileLayer] -- ^ whitelisted layers in which this layer can be placed on
-    [DamageModifier] -- ^ resistances of this later
+    [(Material, Float)] -- ^ materials of this layer, in (Material, Precentage) pairs
   deriving (Eq, Show)
 
 lattice :: TileLayer
