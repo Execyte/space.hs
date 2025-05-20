@@ -35,9 +35,8 @@ library
       Shared.Components.Physics
       Shared.Components.Tiles
   other-modules:
-      Paths_space_station15
-  autogen-modules:
-      Paths_space_station15
+      src/server
+      src/client
   hs-source-dirs:
       src/lib
       src/shared

@@ -27,7 +27,7 @@ Space Station 15 is a remake of Space Station 13 built from scratch in Haskell, 
 3. To build, run:
 
     ```
-    stack build --haddock-docs
+    stack haddock --haddock-docs
     ```
     
     This will produce two executables: `space-station15-client` and `space-station15-server`. Run them with the command:
@@ -44,7 +44,7 @@ macOS building works similarly to Linux, please refer to stack docs for further 
 2. To build, run:
     
     ```
-    stack build
+    stack haddock --haddock-docs
     ```
     
     This will produce two executables: `space-station15-client` and `space-station15-server`. Run them with the command:
