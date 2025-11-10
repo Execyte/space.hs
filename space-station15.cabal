@@ -79,6 +79,7 @@ executable space-station15-client
   other-modules:
       Client.Components.Visual
       Client.Renderer
+      Client.Renderer.Shader
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
@@ -124,6 +125,7 @@ executable space-station15-editor
   other-modules:
       Client.Components.Visual
       Client.Renderer
+      Client.Renderer.Shader
       Paths_space_station15
   autogen-modules:
       Paths_space_station15

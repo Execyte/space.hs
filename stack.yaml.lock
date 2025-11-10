@@ -32,34 +32,6 @@ packages:
       size: 5882
   original:
     hackage: dear-imgui-2.4.0
-- completed:
-    hackage: geomancy-0.3.0.0@sha256:237493387b0ac7036e0611df9074738985e5c1fed0dc2097bfb54f017f5c2e03,2367
-    pantry-tree:
-      sha256: 7eaef1baff72267c423aad95e9463523b51920d7c392c4aa654457d1229333ce
-      size: 1952
-  original:
-    hackage: geomancy-0.3.0.0
-- completed:
-    hackage: gl-block-1.0@sha256:4b098e98a8c8b566cb583c6c105eeafe6be80f7f4a0f687f4d8781841acce8e4,1762
-    pantry-tree:
-      sha256: 61ba9f777adda84168a9cf888b474438d81ca877fdabb4a2473b047ac6719085
-      size: 546
-  original:
-    hackage: gl-block-1.0
-- completed:
-    hackage: ptrdiff-0@sha256:0aef162233f5dcf64bd6993e4df4769c31df693e0002c797fb06998df2fae10e,843
-    pantry-tree:
-      sha256: 44b24db00ca60d3c64c36720dbbb41ae212c4e587c51ad077395a788e63ff1f9
-      size: 272
-  original:
-    hackage: ptrdiff-0
-- completed:
-    hackage: webcolor-labels-0.1.0.0@sha256:ad776868b81d2908e69b0e4620c307b3b847ea959d46e96b11e04d51efeb2124,1995
-    pantry-tree:
-      sha256: 7391909f76da1f851c6b90d3637dfa4ea10cd5ac691722e15497d925749b15f1
-      size: 332
-  original:
-    hackage: webcolor-labels-0.1.0.0
 snapshots:
 - completed:
     sha256: ecb944087cba3b8e85ff75d279bbb878615127e44d1b0485c511834c56ee6929
