@@ -59,12 +59,6 @@ vertexSource = "#version 330 core\n\
   \out vec4 frag_color;\n\
   \void main()\n\
   \{\n\
-  \    mat4 obama_have_dih = mat4(\n\
-  \        2.0f / 640.0f, 0.0f, 0.0f, 0.0f,\n\
-  \        0.0f, 2.0f / -480.0f, 0.0f, 0.0f,\n\
-  \        0.0f, 0.0f, -1.0f, 0.0f,\n\
-  \        -1.0f, 1.0f, 0.0f, 1.0f\n\
-  \    );\n\
   \    gl_Position = u_projection * vec4(position, 0, 1);\n\
   \    frag_uv = uv;\n\
   \    frag_color = color;\n\
