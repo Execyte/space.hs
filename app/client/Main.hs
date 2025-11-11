@@ -8,7 +8,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as ByteString
 import Data.Vector.Storable (Vector)
 import qualified Data.Vector.Storable as Vector
-import Foreign.Ptr (plusPtr, nullPtr)
+import Foreign
 
 import Linear
 import Codec.Picture
@@ -163,8 +163,25 @@ main = do
   window <- SDL.createWindow "Space Station 15" SDL.defaultWindow {
     SDL.windowGraphicsContext = SDL.OpenGLContext SDL.defaultOpenGL
   }
-  -- sponge pls fix this - Execute
-  --SDL.setWindowIcon window "assets/ss15_icon.png"
+  
+  image <- readImage "assets/ss15_icon.png"
+  case image of
+    Left e -> putStrLn e
+    Right (ImageRGBA8 image) -> do
+      icon <- SDL.createRGBSurface
+        (V2 (fromIntegral $ imageWidth image) (fromIntegral $ imageHeight image))
+        SDL.ABGR8888
+      
+      SDL.lockSurface icon
+      let vector = imageData image
+      pixels <- SDL.surfacePixels icon
+      Vector.unsafeWith vector $ \raw ->
+        copyBytes pixels (castPtr raw) (Vector.length vector)
+      SDL.unlockSurface icon
+
+      SDL.setWindowIcon window icon
+    Right _ -> putStrLn "what"
+
   gl <- SDL.glCreateContext window
   SDL.showWindow window
 

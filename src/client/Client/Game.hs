@@ -1,4 +1,4 @@
-module Client.Game(runGame, handleEvent) where
+module Client.Game (runGame, handleEvent) where
 
 import Apecs
 import Components
