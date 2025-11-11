@@ -26,9 +26,11 @@ import Intent (Intent)
 import qualified Intent
 import Client.Renderer (Renderer(..))
 import qualified Client.Renderer as Renderer
-import Client.Renderer.Shader (Shader(..))
 import qualified Client.Renderer.Shader as Shader
 
+{-
+  HELPERS
+-}
 -- TODO: move to separate file
 m44ToGL :: M44 Float -> IO (GL.GLmatrix GL.GLfloat)
 m44ToGL m = GL.newMatrix GL.ColumnMajor [
@@ -44,44 +46,29 @@ m44ToGL m = GL.newMatrix GL.ColumnMajor [
       (V4 e8 e9 eA eB)
       (V4 eC eD eE eF) = m
 
+-- TODO: this too
+-- TODO: i thought about changing loadImage to withImage which is pretty much the same thing but
+-- with a closure so i guess this is a TODO now
+loadImage :: FilePath -> IO (Either String (Image PixelRGBA8))
+loadImage file = do
+  dynImage <- readImage file
+  case dynImage of
+    Left error -> pure (Left error)
+    Right (ImageRGBA8 image) -> pure (Right image)
+    Right image -> pure (Right $ convertRGBA8 image)
+
 {-
   RENDERING
 -}
 vertices :: Vector Float 
 vertices = Vector.fromList [
   0, 0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-  256, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-  0, 256, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-  256, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-  0, 256, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-  256, 256, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+  400, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
+  0, 210, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+  400, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
+  0, 210, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+  400, 210, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
   ]
-
-vertexSource :: ByteString
-vertexSource = "#version 330 core\n\
-  \uniform mat4 u_projection;\n\
-  \layout (location = 0) in vec2 position;\n\
-  \layout (location = 1) in vec2 uv;\n\
-  \layout (location = 2) in vec4 color;\n\
-  \out vec2 frag_uv;\n\
-  \out vec4 frag_color;\n\
-  \void main()\n\
-  \{\n\
-  \    gl_Position = u_projection * vec4(position, 0, 1);\n\
-  \    frag_uv = uv;\n\
-  \    frag_color = color;\n\
-  \}\0"
-
-fragmentSource :: ByteString
-fragmentSource = "#version 330 core\n\
-  \uniform sampler2D u_texture;\n\
-  \in vec2 frag_uv;\n\
-  \in vec4 frag_color;\n\
-  \out vec4 gl_FragColor;\n\
-  \void main()\n\
-  \{\n\
-  \    gl_FragColor = texture(u_texture, frag_uv) * frag_color;\n\
-  \}\0"
 
 {-
   INPUT
@@ -114,7 +101,7 @@ loop :: Renderer -> IO ()
 loop renderer = do
   let
     window = Renderer.window renderer
-    program = Renderer.program renderer
+    shader = Renderer.shader renderer
 
   events <- pollEventsWithImGui
   let intents = eventsToIntents events
@@ -130,7 +117,7 @@ loop renderer = do
 
   GL.clear [GL.ColorBuffer]
 
-  GL.currentProgram $= Just program
+  GL.currentProgram $= Just shader
   GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
   GL.vertexAttribArray (GL.AttribLocation 1) $= GL.Enabled
   GL.vertexAttribArray (GL.AttribLocation 2) $= GL.Enabled
@@ -161,26 +148,33 @@ main = do
   SDL.initialize [SDL.InitVideo]
 
   window <- SDL.createWindow "Space Station 15" SDL.defaultWindow {
+    SDL.windowPosition = SDL.Centered,
+    SDL.windowInitialSize = V2 800 600,
+    SDL.windowResizable = True,
     SDL.windowGraphicsContext = SDL.OpenGLContext SDL.defaultOpenGL
   }
   
-  image <- readImage "assets/ss15_icon.png"
-  case image of
-    Left e -> putStrLn e
-    Right (ImageRGBA8 image) -> do
-      icon <- SDL.createRGBSurface
-        (V2 (fromIntegral $ imageWidth image) (fromIntegral $ imageHeight image))
-        SDL.ABGR8888
-      
-      SDL.lockSurface icon
-      let vector = imageData image
-      pixels <- SDL.surfacePixels icon
-      Vector.unsafeWith vector $ \raw ->
-        copyBytes pixels (castPtr raw) (Vector.length vector)
-      SDL.unlockSurface icon
+  eitherImage <- loadImage "assets/ss15_icon.png"
+  image <- case eitherImage of
+    Left error -> do
+      hPutStrLn stderr error
+      exitFailure
+    Right image -> return image
+  
+  let
+    width = fromIntegral (imageWidth image)
+    height = fromIntegral (imageHeight image)
+    pixels = imageData image
 
-      SDL.setWindowIcon window icon
-    Right _ -> putStrLn "what"
+  icon <- SDL.createRGBSurface (V2 width height) SDL.ABGR8888
+  
+  SDL.lockSurface icon
+  destination <- SDL.surfacePixels icon
+  Vector.unsafeWith pixels $ \ptr ->
+    copyBytes destination (castPtr ptr) (Vector.length pixels)
+  SDL.unlockSurface icon
+
+  SDL.setWindowIcon window icon
 
   gl <- SDL.glCreateContext window
   SDL.showWindow window
@@ -191,16 +185,16 @@ main = do
 
   ImIO.setIniFilename nullPtr
 
-  GL.viewport $= (GL.Position 0 0, GL.Size 640 480)
+  GL.viewport $= (GL.Position 0 0, GL.Size 800 600)
 
   GL.blend $= GL.Enabled
   GL.blendFunc $= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
   
   GL.clearColor $= GL.Color4 0 0 0 0
   
-  maybeShader <- Shader.fromByteStrings [
-    (GL.VertexShader, vertexSource),
-    (GL.FragmentShader, fragmentSource)
+  maybeShader <- Shader.fromFiles [
+    (GL.VertexShader, "assets/vertex.glsl"),
+    (GL.FragmentShader, "assets/fragment.glsl")
     ]
 
   shader <- case maybeShader of
@@ -209,8 +203,6 @@ main = do
       hPutStrLn stderr logs
       exitFailure
     (Just shader, _) -> return shader
-  
-  let program = Shader.program shader
 
   texture <- GL.genObjectName
   GL.activeTexture $= GL.TextureUnit 0
@@ -218,34 +210,35 @@ main = do
 
   GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
 
-  dynImage <- readImage "assets/ss15_full_title.png"
-  case dynImage of
-    Left e -> do
-      hPutStrLn stderr e
+  eitherImage <- loadImage "assets/ss15_full_title.png"
+  image <- case eitherImage of
+    Left error -> do
+      hPutStrLn stderr error
       exitFailure
-    Right (ImageRGBA8 image) -> do
-      let width = fromIntegral $ imageWidth image
-      let height = fromIntegral $ imageHeight image
-      let pixels = imageData image
-      Vector.unsafeWith pixels $ \ptr ->
-        GL.texImage2D GL.Texture2D GL.NoProxy 0 GL.RGBA' (GL.TextureSize2D width height) 0 $ GL.PixelData GL.RGBA GL.UnsignedByte ptr
-    Right _ -> do
-      hPutStrLn stderr "fuck you"
-      exitFailure
-  
-  GL.currentProgram $= Just program
+    Right image -> return image
 
-  uniform <- GL.uniformLocation program "u_texture"
-  GL.uniform uniform $= GL.TextureUnit 0
+  let
+    width = fromIntegral (imageWidth image)
+    height = fromIntegral (imageHeight image)
+    pixels = imageData image
+  
+  Vector.unsafeWith pixels $ \ptr -> do
+    GL.texImage2D
+      GL.Texture2D
+      GL.NoProxy 0
+      GL.RGBA'
+      (GL.TextureSize2D width height)
+      0
+      $ GL.PixelData GL.RGBA GL.UnsignedByte ptr
+  
+  Shader.setUniform shader "u_texture" (GL.TextureUnit 0)
 
   projection <- m44ToGL $ ortho 0 640 480 0 (-1) 1
+  Shader.setUniform shader "u_projection" projection
 
-  uniform <- GL.uniformLocation program "u_projection"
-  GL.uniform uniform $= projection
-
-  let renderer = Renderer.Renderer {
+  let renderer = Renderer {
     Renderer.window = window,
-    Renderer.program = program,
+    Renderer.shader = shader,
     Renderer.texture = texture
   }
 

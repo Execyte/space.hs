@@ -1,6 +1,8 @@
 module Client.Renderer.Shader (
-  Shader(..),
-  fromByteStrings
+  Shader,
+  fromByteStrings,
+  fromFiles,
+  setUniform
 ) where
 
 import Data.ByteString (ByteString)
@@ -9,9 +11,7 @@ import qualified Data.ByteString as ByteString
 import qualified Graphics.Rendering.OpenGL as GL
 import Data.StateVar
 
-newtype Shader = Shader {
-  program :: GL.Program
-}
+type Shader = GL.Program
 
 createShader :: GL.ShaderType -> ByteString -> IO (Maybe GL.Shader, String)
 createShader type' code = do
@@ -45,7 +45,7 @@ fromByteStrings shaders = attach shaders =<< GL.createProgram
       valid <- GL.validateStatus program
       logs <- GL.programInfoLog program
 
-      return (if linked && valid then Just $ Shader program else Nothing, logs)
+      return (if linked && valid then Just program else Nothing, logs)
 
 fromFiles :: [(GL.ShaderType, FilePath)] -> IO (Maybe Shader, String)
 fromFiles shaders = attach shaders =<< GL.createProgram
@@ -70,4 +70,11 @@ fromFiles shaders = attach shaders =<< GL.createProgram
       valid <- GL.validateStatus program
       logs <- GL.programInfoLog program
 
-      return (if linked && valid then Just $ Shader program else Nothing, logs)
+      return (if linked && valid then Just program else Nothing, logs)
+
+setUniform :: GL.Uniform a => Shader -> String -> a -> IO ()
+setUniform shader name value = do
+  GL.currentProgram $= Just shader
+  uniform <- GL.uniformLocation shader name
+  GL.uniform uniform $= value
+  GL.currentProgram $= Nothing

@@ -1,10 +1,12 @@
 module Client.Game (runGame, handleEvent) where
 
 import Apecs
-import Components
 import Linear
+import qualified Graphics.Rendering.OpenGL as GL
+import qualified SDL
 
 import Event
+import Components
 
 makeWorld "World" [''Camera, ''Client]
 

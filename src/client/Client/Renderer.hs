@@ -4,9 +4,10 @@ module Client.Renderer (
 
 import qualified SDL
 import qualified Graphics.Rendering.OpenGL.GL as GL
+import Client.Renderer.Shader (Shader)
 
 data Renderer = Renderer {
   window :: SDL.Window,
-  program :: GL.Program,
+  shader :: Shader,
   texture :: GL.TextureObject
 }
