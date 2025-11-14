@@ -15,7 +15,9 @@ import Linear
 data Renderer = Renderer {
   window :: SDL.Window,
   shader :: Shader,
-  texture :: GL.TextureObject
+  texture :: GL.TextureObject,
+  vertexBuffer :: GL.BufferObject,
+  vertexArray :: GL.VertexArrayObject
 }
 
 m44ToGL :: M44 Float -> IO (GL.GLmatrix GL.GLfloat)

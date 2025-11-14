@@ -67,6 +67,7 @@ loop renderer = do
   let
     window = Renderer.window renderer
     shader = Renderer.shader renderer
+    vertexArray = Renderer.vertexArray renderer
 
   events <- pollEventsWithImGui
   let intents = eventsToIntents events
@@ -86,20 +87,9 @@ loop renderer = do
   GL.clear [GL.ColorBuffer]
 
   GL.currentProgram $= Just shader
-  GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
-  GL.vertexAttribArray (GL.AttribLocation 1) $= GL.Enabled
-  GL.vertexAttribArray (GL.AttribLocation 2) $= GL.Enabled
-  Vector.unsafeWith vertices $ \pointer -> do
-    GL.vertexAttribPointer (GL.AttribLocation 0) $=
-      (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 pointer)
-    GL.vertexAttribPointer (GL.AttribLocation 1) $=
-      (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 $ pointer `plusPtr` 8)
-    GL.vertexAttribPointer (GL.AttribLocation 2) $=
-      (GL.ToFloat, GL.VertexArrayDescriptor 4 GL.Float 32 $ pointer `plusPtr` 16)
+  GL.bindVertexArrayObject $= Just vertexArray
   GL.drawArrays GL.Triangles 0 6
-  GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Disabled
-  GL.vertexAttribArray (GL.AttribLocation 1) $= GL.Disabled
-  GL.vertexAttribArray (GL.AttribLocation 2) $= GL.Disabled
+  GL.bindVertexArrayObject $= Nothing
 
   Im.render
   openGL3RenderDrawData =<< Im.getDrawData
@@ -151,6 +141,27 @@ main = do
   
   GL.clearColor $= GL.Color4 0 0 0 0
   
+  vertexArray <- GL.genObjectName
+  vertexBuffer <- GL.genObjectName
+  
+  GL.bindVertexArrayObject $= Just vertexArray
+  GL.bindBuffer GL.ArrayBuffer $= Just vertexBuffer
+  let
+    floatSize = fromIntegral $ sizeOf (undefined :: Float)
+    verticesSize = fromIntegral $ floatSize * Vector.length vertices
+  Vector.unsafeWith vertices $ \ptr -> do
+    GL.bufferData GL.ArrayBuffer $= (verticesSize, ptr, GL.StaticDraw)
+  GL.vertexAttribPointer (GL.AttribLocation 0) $=
+    (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 nullPtr)
+  GL.vertexAttribPointer (GL.AttribLocation 1) $=
+    (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 $ plusPtr nullPtr $ floatSize * 2)
+  GL.vertexAttribPointer (GL.AttribLocation 2) $=
+    (GL.ToFloat, GL.VertexArrayDescriptor 4 GL.Float 32 $ plusPtr nullPtr $ floatSize * 4)
+  GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
+  GL.vertexAttribArray (GL.AttribLocation 1) $= GL.Enabled
+  GL.vertexAttribArray (GL.AttribLocation 2) $= GL.Enabled
+  GL.bindVertexArrayObject $= Nothing
+
   maybeShader <- Shader.fromFiles [
     (GL.VertexShader, "assets/vertex.glsl"),
     (GL.FragmentShader, "assets/fragment.glsl")
@@ -193,7 +204,9 @@ main = do
   let renderer = Renderer {
     Renderer.window = window,
     Renderer.shader = shader,
-    Renderer.texture = texture
+    Renderer.texture = texture,
+    Renderer.vertexBuffer = vertexBuffer,
+    Renderer.vertexArray = vertexArray
   }
 
   loop renderer
