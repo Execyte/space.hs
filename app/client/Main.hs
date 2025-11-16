@@ -29,14 +29,13 @@ import Client.Renderer (Renderer(..))
 import qualified ImUtils
 import qualified Client.Renderer as Renderer
 import qualified Client.Renderer.Shader as Shader
-import Apecs (liftIO)
 
 vertices :: Vector Float
 vertices = Vector.fromList [
   0, 0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-  400, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-  0, 210, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-  400, 210, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+  1, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
+  0, 1, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+  1, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
   ]
 
 indices :: Vector Word32
@@ -181,7 +180,7 @@ main = do
 
   GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
 
-  image <- Renderer.loadImage "assets/ss15_full_title.png"
+  image <- Renderer.loadImage "assets/tile.png"
 
   let
     width = fromIntegral (imageWidth image)
@@ -198,6 +197,9 @@ main = do
       $ GL.PixelData GL.RGBA GL.UnsignedByte ptr
   
   Shader.setUniform shader "u_texture" (GL.TextureUnit 0)
+
+  model <- Renderer.m44ToGL $ identity * V4 32 32 1 1
+  Shader.setUniform shader "u_model" model
 
   projection <- Renderer.m44ToGL $ ortho 0 640 480 0 (-1) 1
   Shader.setUniform shader "u_projection" projection

@@ -1,5 +1,6 @@
 #version 330 core
 
+uniform mat4 u_model;
 uniform mat4 u_projection;
 
 layout (location = 0) in vec2 position;
@@ -11,7 +12,7 @@ out vec4 frag_color;
 
 void main()
 {
-    gl_Position = u_projection * vec4(position, 0, 1);
+    gl_Position = u_projection * u_model * vec4(position, 0, 1);
     frag_uv = uv;
     frag_color = color;
 }
