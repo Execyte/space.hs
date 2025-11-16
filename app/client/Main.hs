@@ -33,10 +33,11 @@ vertices = Vector.fromList [
   0, 0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
   400, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
   0, 210, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-  400, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-  0, 210, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
   400, 210, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
   ]
+
+indices :: Vector Word32
+indices = Vector.fromList [0, 1, 2, 1, 2, 3]
 
 action :: Intent -> IO ()
 action Intent.Quit = exitSuccess
@@ -88,7 +89,7 @@ loop renderer = do
 
   GL.currentProgram $= Just shader
   GL.bindVertexArrayObject $= Just vertexArray
-  GL.drawArrays GL.Triangles 0 6
+  GL.drawElements GL.Triangles 6 GL.UnsignedInt nullPtr
   GL.bindVertexArrayObject $= Nothing
 
   Im.render
@@ -140,27 +141,6 @@ main = do
   GL.blendFunc $= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
   
   GL.clearColor $= GL.Color4 0 0 0 0
-  
-  vertexArray <- GL.genObjectName
-  vertexBuffer <- GL.genObjectName
-  
-  GL.bindVertexArrayObject $= Just vertexArray
-  GL.bindBuffer GL.ArrayBuffer $= Just vertexBuffer
-  let
-    floatSize = fromIntegral $ sizeOf (undefined :: Float)
-    verticesSize = fromIntegral $ floatSize * Vector.length vertices
-  Vector.unsafeWith vertices $ \ptr -> do
-    GL.bufferData GL.ArrayBuffer $= (verticesSize, ptr, GL.StaticDraw)
-  GL.vertexAttribPointer (GL.AttribLocation 0) $=
-    (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 nullPtr)
-  GL.vertexAttribPointer (GL.AttribLocation 1) $=
-    (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 $ plusPtr nullPtr $ floatSize * 2)
-  GL.vertexAttribPointer (GL.AttribLocation 2) $=
-    (GL.ToFloat, GL.VertexArrayDescriptor 4 GL.Float 32 $ plusPtr nullPtr $ floatSize * 4)
-  GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
-  GL.vertexAttribArray (GL.AttribLocation 1) $= GL.Enabled
-  GL.vertexAttribArray (GL.AttribLocation 2) $= GL.Enabled
-  GL.bindVertexArrayObject $= Nothing
 
   maybeShader <- Shader.fromFiles [
     (GL.VertexShader, "assets/vertex.glsl"),
@@ -200,6 +180,38 @@ main = do
 
   projection <- Renderer.m44ToGL $ ortho 0 640 480 0 (-1) 1
   Shader.setUniform shader "u_projection" projection
+
+  vertexArray <- GL.genObjectName
+  vertexBuffer <- GL.genObjectName
+  elementBuffer <- GL.genObjectName
+
+  GL.bindVertexArrayObject $= Just vertexArray
+
+  let
+    floatSize = sizeOf (undefined :: Float)
+    intSize = sizeOf (undefined :: Int)
+    verticesSize = fromIntegral $ floatSize * Vector.length vertices
+    indicesSize = fromIntegral $ intSize * Vector.length indices
+
+  GL.bindBuffer GL.ArrayBuffer $= Just vertexBuffer
+  Vector.unsafeWith vertices $ \ptr -> do
+    GL.bufferData GL.ArrayBuffer $= (verticesSize, ptr, GL.StaticDraw)
+  
+  GL.bindBuffer GL.ElementArrayBuffer $= Just elementBuffer
+  Vector.unsafeWith indices $ \ptr -> do
+    GL.bufferData GL.ElementArrayBuffer $= (indicesSize, ptr, GL.StaticDraw)
+
+  GL.vertexAttribPointer (GL.AttribLocation 0) $=
+    (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 nullPtr)
+  GL.vertexAttribPointer (GL.AttribLocation 1) $=
+    (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 $ plusPtr nullPtr $ floatSize * 2)
+  GL.vertexAttribPointer (GL.AttribLocation 2) $=
+    (GL.ToFloat, GL.VertexArrayDescriptor 4 GL.Float 32 $ plusPtr nullPtr $ floatSize * 4)
+  GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
+  GL.vertexAttribArray (GL.AttribLocation 1) $= GL.Enabled
+  GL.vertexAttribArray (GL.AttribLocation 2) $= GL.Enabled
+
+  GL.bindVertexArrayObject $= Nothing
 
   let renderer = Renderer {
     Renderer.window = window,
