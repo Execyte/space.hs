@@ -100,8 +100,9 @@ library
 executable space-station15-client
   main-is: Main.hs
   other-modules:
-      ImUtils
       Client.Game
+      Client.ImUtils
+      Client.RectPack
       Client.Renderer
       Client.Renderer.Shader
       Paths_space_station15
@@ -176,6 +177,8 @@ executable space-station15-editor
   main-is: Main.hs
   other-modules:
       Client.Game
+      Client.ImUtils
+      Client.RectPack
       Client.Renderer
       Client.Renderer.Shader
       Paths_space_station15

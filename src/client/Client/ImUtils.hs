@@ -1,4 +1,4 @@
-module ImUtils (
+module Client.ImUtils (
   beginFlags,
   withWindowFlags,
   withWindowOpenFlags

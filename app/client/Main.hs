@@ -26,7 +26,7 @@ import qualified Direction
 import Intent (Intent)
 import qualified Intent
 import Client.Renderer (Renderer(..))
-import qualified ImUtils
+import qualified Client.ImUtils as ImUtils
 import qualified Client.Renderer as Renderer
 import qualified Client.Renderer.Shader as Shader
 
