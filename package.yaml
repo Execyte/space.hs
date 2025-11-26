@@ -28,8 +28,12 @@ dependencies:
 - apecs
 - linear
 - containers
-- network
-- network-udp
+- cryptonite
+- hourglass
+- memory
+- tls
+- x509
+- quic
 - aeson
 - text
 - random
@@ -96,6 +100,7 @@ default-extensions:
 - PatternSynonyms
 - ExistentialQuantification
 - FunctionalDependencies
+- BlockArguments
 - GADTs
 
 executables:

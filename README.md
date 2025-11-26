@@ -2,7 +2,15 @@
 
 [![Join our Discord server](https://img.shields.io/badge/join_our-Discord_server-5865F2?logo=discord&logoColor=white)](https://discord.gg/qW8bHkncrb) [![Powered by Haskell](https://img.shields.io/badge/powered_by-Haskell-5D4F85?logo=haskell&logoColor=white)](https://haskell.org)
 
-Space Station 15 is a reiteration of Space Station 13 focusing on very different gameplay. Each job has extensibility, replayability and will always remain "believable and realistic".
+Space Station 15 is a game based around the fundamentals of Space Station 13 with custom additions added on top and a whole bunch of things outright changed. This is a whole separate project, not a full-on, accurate recreation.
+
+# Motivation
+
+My motivation to start working on space station 15 stems from the main fact that I really appreciate how the original SS13 game was build, but a lot of the ideas and thoughts I've wanted to recreate in the genre of the game just simply did not fit what the game was supposed to be. But still, why a whole 'nother game, why not a fork? This is actually due to SS14, the original SS13 game recreated in C#. It has inspired me a little bit, but I'd much more appreciate if I could build my vision of space station 13 in the tools that I like and I'm comfortable using.
+
+Now that this is all out of the way, I don't expect maintainers and I don't expect a whole lot of players. Contribute to the project if u wish, join the discord to do so as it's much more preferable to coordinate changes way beforehand. This is, practically, a one (two, sponge did most of the heavy lifting) man project.
+
+Also beware, this project is community closed. Some minor background checks have to be done before u are fully accepted into the project. Feel free to host ur own server and play the game by urself or with ur friends, though. Join at ur sole discretion.
 
 # Building
 ## Prerequisites
@@ -10,8 +18,6 @@ Space Station 15 is a reiteration of Space Station 13 focusing on very different
 - [Stack](https://docs.haskellstack.org/en/stable/#how-to-install-stack)
 
 ## Windows
-**NOTE:** This method of building currently does not work.
-
 1. Install SDL2 and OpenAL using this command:
     
     ```

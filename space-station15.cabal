@@ -74,6 +74,7 @@ library
       PatternSynonyms
       ExistentialQuantification
       FunctionalDependencies
+      BlockArguments
       GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
@@ -86,18 +87,22 @@ library
     , base >=4.7 && <5
     , bytestring
     , containers
+    , cryptonite
     , dear-imgui
     , extra
+    , hourglass
     , lens
     , linear
-    , network
-    , network-udp
+    , memory
+    , quic
     , random
     , sdl2
     , stm
     , text
+    , tls
     , unliftio
     , vector
+    , x509
   default-language: Haskell2010
 
 executable space-station15-client
@@ -153,6 +158,7 @@ executable space-station15-client
       PatternSynonyms
       ExistentialQuantification
       FunctionalDependencies
+      BlockArguments
       GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -165,19 +171,23 @@ executable space-station15-client
     , base >=4.7 && <5
     , bytestring
     , containers
+    , cryptonite
     , dear-imgui
     , extra
+    , hourglass
     , lens
     , linear
-    , network
-    , network-udp
+    , memory
+    , quic
     , random
     , sdl2
     , space-station15
     , stm
     , text
+    , tls
     , unliftio
     , vector
+    , x509
   default-language: Haskell2010
 
 executable space-station15-editor
@@ -233,6 +243,7 @@ executable space-station15-editor
       PatternSynonyms
       ExistentialQuantification
       FunctionalDependencies
+      BlockArguments
       GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -245,19 +256,23 @@ executable space-station15-editor
     , base >=4.7 && <5
     , bytestring
     , containers
+    , cryptonite
     , dear-imgui
     , extra
+    , hourglass
     , lens
     , linear
-    , network
-    , network-udp
+    , memory
+    , quic
     , random
     , sdl2
     , space-station15
     , stm
     , text
+    , tls
     , unliftio
     , vector
+    , x509
   default-language: Haskell2010
 
 executable space-station15-server
@@ -308,6 +323,7 @@ executable space-station15-server
       PatternSynonyms
       ExistentialQuantification
       FunctionalDependencies
+      BlockArguments
       GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -320,17 +336,21 @@ executable space-station15-server
     , base >=4.7 && <5
     , bytestring
     , containers
+    , cryptonite
     , dear-imgui
     , extra
+    , hourglass
     , lens
     , linear
-    , network
-    , network-udp
+    , memory
+    , quic
     , random
     , sdl2
     , space-station15
     , stm
     , text
+    , tls
     , unliftio
     , vector
+    , x509
   default-language: Haskell2010
