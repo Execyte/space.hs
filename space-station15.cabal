@@ -27,8 +27,9 @@ library
   exposed-modules:
       Components
       Direction
-      Event
       Intent
+      Network.ConnectionStatus
+      Network.Message
   other-modules:
       Paths_space_station15
   autogen-modules:
@@ -74,6 +75,7 @@ library
       PatternSynonyms
       ExistentialQuantification
       FunctionalDependencies
+      BlockArguments
       GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
@@ -83,28 +85,41 @@ library
     , StateVar
     , aeson
     , apecs
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
+    , crypton
     , dear-imgui
+    , exceptions
+    , extra
+    , hourglass
     , lens
     , linear
+    , memory
     , network
+    , quic
+    , quic-simple
     , random
     , sdl2
+    , serialise
+    , stm
     , text
+    , tls
     , unliftio
     , vector
+    , x509
   default-language: Haskell2010
 
 executable space-station15-client
   main-is: Main.hs
   other-modules:
       Client.Game
-      Client.ImUtils
+      Client.ImGui
       Client.RectPack
       Client.Renderer
       Client.Renderer.Shader
+      Client.UI.ConnectMenu
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
@@ -149,6 +164,7 @@ executable space-station15-client
       PatternSynonyms
       ExistentialQuantification
       FunctionalDependencies
+      BlockArguments
       GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -158,29 +174,42 @@ executable space-station15-client
     , StateVar
     , aeson
     , apecs
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
+    , crypton
     , dear-imgui
+    , exceptions
+    , extra
+    , hourglass
     , lens
     , linear
+    , memory
     , network
+    , quic
+    , quic-simple
     , random
     , sdl2
+    , serialise
     , space-station15
+    , stm
     , text
+    , tls
     , unliftio
     , vector
+    , x509
   default-language: Haskell2010
 
 executable space-station15-editor
   main-is: Main.hs
   other-modules:
       Client.Game
-      Client.ImUtils
+      Client.ImGui
       Client.RectPack
       Client.Renderer
       Client.Renderer.Shader
+      Client.UI.ConnectMenu
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
@@ -225,6 +254,7 @@ executable space-station15-editor
       PatternSynonyms
       ExistentialQuantification
       FunctionalDependencies
+      BlockArguments
       GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -234,25 +264,37 @@ executable space-station15-editor
     , StateVar
     , aeson
     , apecs
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
+    , crypton
     , dear-imgui
+    , exceptions
+    , extra
+    , hourglass
     , lens
     , linear
+    , memory
     , network
+    , quic
+    , quic-simple
     , random
     , sdl2
+    , serialise
     , space-station15
+    , stm
     , text
+    , tls
     , unliftio
     , vector
+    , x509
   default-language: Haskell2010
 
 executable space-station15-server
   main-is: Main.hs
   other-modules:
-      Server.World
+      Server.Simulation
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
@@ -297,6 +339,7 @@ executable space-station15-server
       PatternSynonyms
       ExistentialQuantification
       FunctionalDependencies
+      BlockArguments
       GADTs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
@@ -306,17 +349,29 @@ executable space-station15-server
     , StateVar
     , aeson
     , apecs
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
+    , crypton
     , dear-imgui
+    , exceptions
+    , extra
+    , hourglass
     , lens
     , linear
+    , memory
     , network
+    , quic
+    , quic-simple
     , random
     , sdl2
+    , serialise
     , space-station15
+    , stm
     , text
+    , tls
     , unliftio
     , vector
+    , x509
   default-language: Haskell2010

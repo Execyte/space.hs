@@ -2,6 +2,7 @@ module Main (main) where
 
 import Control.Monad (foldM_, unless, when)
 import Data.Bits
+import Data.Text(Text)
 import Data.Maybe
 import System.Exit
 import System.IO
@@ -14,7 +15,9 @@ import Foreign
 import Linear
 import Codec.Picture
 import Data.StateVar
-import qualified DearImGui as Im
+import Control.Concurrent.STM 
+import Control.Concurrent.STM.TVar
+import qualified Client.ImGui as Im
 import DearImGui.OpenGL3
 import qualified DearImGui.Raw.IO as ImIO
 import DearImGui.SDL
@@ -22,27 +25,30 @@ import DearImGui.SDL.OpenGL
 import qualified Graphics.Rendering.OpenGL.GL as GL
 import qualified SDL
 
+import Network.ConnectionStatus
+import Network.Message
 import qualified Direction
 import Intent (Intent)
 import qualified Intent
 import Client.Renderer (Renderer(..))
-import qualified Client.ImUtils as ImUtils
 import qualified Client.Renderer as Renderer
 import qualified Client.Renderer.Shader as Shader
+
+import Client.UI.ConnectMenu
 
 -- TODO: implement tile layers
 type Tile = Int
 
 tiles :: [[Tile]]
 tiles = [
-  [0, 1, 0, 1, 0, 1, 0, 1],
-  [1, 0, 1, 0, 1, 0, 1, 0],
-  [0, 1, 0, 1, 0, 1, 0, 1],
-  [1, 0, 1, 0, 1, 0, 1, 0],
-  [0, 1, 0, 1, 0, 1, 0, 1],
-  [1, 0, 1, 0, 1, 0, 1, 0],
-  [0, 1, 0, 1, 0, 1, 0, 1],
-  [1, 0, 1, 0, 1, 0, 1, 0]
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 1, 0, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 1, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0]
   ]
 
 -- vertices :: Vector Float
@@ -111,8 +117,8 @@ drawTiles renderer =
 
       GL.drawElements GL.Triangles 6 GL.UnsignedInt nullPtr
 
-loop :: Renderer -> IO ()
-loop renderer = do
+loop :: Renderer -> IO () -> IO ()
+loop renderer buildUI = do
   let
     window = Renderer.window renderer
     shader = Renderer.shader renderer
@@ -127,11 +133,7 @@ loop renderer = do
   sdl2NewFrame
   Im.newFrame
 
-  Im.showDemoWindow
-  Im.showMetricsWindow
-
-  Im.withWindowOpen "the space station 15" $ do
-    Im.text "the space station 15 is real"
+  buildUI
 
   let
     flags =
@@ -146,7 +148,7 @@ loop renderer = do
   let padding = makeGettableStateVar . pure $ Im.ImVec2 0 0
   Im.pushStyleVar Im.ImGuiStyleVar_WindowPadding padding
 
-  ImUtils.withWindowOpenFlags "overlay" flags $ do
+  Im.withWindowOpenFlags "overlay" flags $ do
     Im.text "TODO: use this overlay for something"
 
   Im.popStyleVar 1
@@ -163,7 +165,7 @@ loop renderer = do
 
   SDL.glSwapWindow window
 
-  unless quit $ loop renderer
+  unless quit $ loop renderer buildUI
 
 main = do
   SDL.initialize [SDL.InitVideo]
@@ -278,6 +280,11 @@ main = do
 
   GL.bindVertexArrayObject $= Nothing
 
+  connInfo <- atomically $ newTVar $ Disconnected ""
+
+  connectMenu <- atomically $ newConnectMenu
+  let drawUI = drawConnectMenu connectMenu connInfo
+
   let renderer = Renderer {
     Renderer.window = window,
     Renderer.shader = shader,
@@ -286,7 +293,7 @@ main = do
     Renderer.vertexArray = vertexArray
   }
 
-  loop renderer
+  loop renderer drawUI
 
   openGL3Shutdown
   sdl2Shutdown

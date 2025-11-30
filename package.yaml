@@ -27,16 +27,28 @@ dependencies:
 - sdl2
 - apecs
 - linear
+- async
+- serialise
 - containers
+- crypton
+- hourglass
+- memory
+- tls
+- x509
+- quic
+- quic-simple
 - network
 - aeson
 - text
 - random
 - OpenAL
 - OpenGL
+- exceptions
 - StateVar
 - dear-imgui
 - unliftio
+- stm
+- extra
 - JuicyPixels
 
 library:
@@ -93,6 +105,7 @@ default-extensions:
 - PatternSynonyms
 - ExistentialQuantification
 - FunctionalDependencies
+- BlockArguments
 - GADTs
 
 executables:
