@@ -6,7 +6,7 @@ module Client.ImGui (
 ) where
 
 import Control.Monad (when)
-import Data.Text (Text)
+import Data.Text(Text)
 
 import UnliftIO
 import DearImGui

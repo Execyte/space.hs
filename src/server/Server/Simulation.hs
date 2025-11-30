@@ -1,4 +1,4 @@
-module Server.World (world) where
+module Server.Simulation (world) where
 
 import Apecs
 

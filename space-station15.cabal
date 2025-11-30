@@ -27,8 +27,9 @@ library
   exposed-modules:
       Components
       Direction
-      Event
       Intent
+      Network.ConnectionStatus
+      Network.Message
   other-modules:
       Paths_space_station15
   autogen-modules:
@@ -84,19 +85,24 @@ library
     , StateVar
     , aeson
     , apecs
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
-    , cryptonite
+    , crypton
     , dear-imgui
+    , exceptions
     , extra
     , hourglass
     , lens
     , linear
     , memory
+    , network
     , quic
+    , quic-simple
     , random
     , sdl2
+    , serialise
     , stm
     , text
     , tls
@@ -168,19 +174,24 @@ executable space-station15-client
     , StateVar
     , aeson
     , apecs
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
-    , cryptonite
+    , crypton
     , dear-imgui
+    , exceptions
     , extra
     , hourglass
     , lens
     , linear
     , memory
+    , network
     , quic
+    , quic-simple
     , random
     , sdl2
+    , serialise
     , space-station15
     , stm
     , text
@@ -253,19 +264,24 @@ executable space-station15-editor
     , StateVar
     , aeson
     , apecs
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
-    , cryptonite
+    , crypton
     , dear-imgui
+    , exceptions
     , extra
     , hourglass
     , lens
     , linear
     , memory
+    , network
     , quic
+    , quic-simple
     , random
     , sdl2
+    , serialise
     , space-station15
     , stm
     , text
@@ -278,7 +294,7 @@ executable space-station15-editor
 executable space-station15-server
   main-is: Main.hs
   other-modules:
-      Server.World
+      Server.Simulation
       Paths_space_station15
   autogen-modules:
       Paths_space_station15
@@ -333,19 +349,24 @@ executable space-station15-server
     , StateVar
     , aeson
     , apecs
+    , async
     , base >=4.7 && <5
     , bytestring
     , containers
-    , cryptonite
+    , crypton
     , dear-imgui
+    , exceptions
     , extra
     , hourglass
     , lens
     , linear
     , memory
+    , network
     , quic
+    , quic-simple
     , random
     , sdl2
+    , serialise
     , space-station15
     , stm
     , text

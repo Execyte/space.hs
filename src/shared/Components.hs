@@ -1,4 +1,4 @@
-module Components(Camera(..), Client(..)) where
+module Components(ServerEntity, ClientEntity, Camera(..), Client(..)) where
 
 import Apecs
 import Apecs.TH (makeWorld, makeMapComponents)
@@ -7,6 +7,9 @@ import Data.Semigroup
 import Data.Monoid
 
 import Linear
+
+type ServerEntity = Entity
+type ClientEntity = Entity
 
 newtype Camera = Camera (V2 Float) deriving Show
 instance Component Camera where

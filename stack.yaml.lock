@@ -33,6 +33,13 @@ packages:
   original:
     hackage: dear-imgui-2.4.0
 - completed:
+    hackage: serialise-0.2.6.1@sha256:a67f89b5533b1148ad465dc7f24baeed2e2e9e7d81d2a147fc7fa8ff1089ca4d,8814
+    pantry-tree:
+      sha256: e2b5dc18ea5ac82cf8776d1620f641cd518cb6e9c971e417c324a8d251c332c1
+      size: 4056
+  original:
+    hackage: serialise-0.2.6.1
+- completed:
     hackage: stm-2.5.3.1@sha256:421b57c9cdf55b4977e9445336be3895ba0c8d92b6ec6e474f140e173270d9dd,2443
     pantry-tree:
       sha256: bf5b63fd751f2aab774df1d76d1a2298c1203b4c7be4f66bae47669e026bfbe9
@@ -47,12 +54,12 @@ packages:
   original:
     hackage: quic-0.2.7
 - completed:
-    hackage: random-1.3.1@sha256:0b4f649c3e78713b2ccad1535251ee34b148237fb2229d7058c2b1d9ccc324b8,6004
+    hackage: quic-simple-0.1.0.0@sha256:c9b03dbbe0824ffca27b10adba7091a843d43b9476bd6198b3de009e68aefaff,1975
     pantry-tree:
-      sha256: 9e92209c00b0c00b7d1c503e15a27b67b74ac2e3b48269a9255893b06de6836c
-      size: 1667
+      sha256: 0ac267b9715fba002a3667b72957b9575366df408282380a895275aca2363a28
+      size: 482
   original:
-    hackage: random-1.3.1
+    hackage: quic-simple-0.1.0.0
 - completed:
     hackage: x509-1.7.7@sha256:90eef2d745a654146fc1c325e035eaddac531e4d2145d4bc1dcf4b8fad439d34,2276
     pantry-tree:

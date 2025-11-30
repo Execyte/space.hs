@@ -25,6 +25,8 @@ import DearImGui.SDL.OpenGL
 import qualified Graphics.Rendering.OpenGL.GL as GL
 import qualified SDL
 
+import Network.ConnectionStatus
+import Network.Message
 import qualified Direction
 import Intent (Intent)
 import qualified Intent
@@ -39,14 +41,14 @@ type Tile = Int
 
 tiles :: [[Tile]]
 tiles = [
-  [0, 1, 0, 1, 0, 1, 0, 1],
-  [1, 0, 1, 0, 1, 0, 1, 0],
-  [0, 1, 0, 1, 0, 1, 0, 1],
-  [1, 0, 1, 0, 0, 1, 0, 0],
-  [0, 1, 0, 1, 0, 1, 0, 1],
-  [1, 0, 1, 0, 0, 1, 1, 0],
-  [0, 1, 0, 1, 0, 1, 0, 1],
-  [1, 0, 1, 0, 1, 0, 1, 0]
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 1, 0, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 1, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0]
   ]
 
 -- vertices :: Vector Float
@@ -278,10 +280,10 @@ main = do
 
   GL.bindVertexArrayObject $= Nothing
 
-  socket <- atomically $ newTVar Nothing
+  connInfo <- atomically $ newTVar $ Disconnected ""
 
   connectMenu <- atomically $ newConnectMenu
-  let drawUI = drawConnectMenu connectMenu socket
+  let drawUI = drawConnectMenu connectMenu connInfo
 
   let renderer = Renderer {
     Renderer.window = window,
