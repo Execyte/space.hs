@@ -124,8 +124,8 @@ drawTiles renderer =
 
       GL.drawElements GL.Triangles 6 GL.UnsignedInt nullPtr
 
-render :: World -> Renderer -> IO ()
-render world renderer = do
+renderGame :: World -> Renderer -> IO ()
+renderGame world renderer = do
   let
     shader = Renderer.shader renderer
     vertexArray = Renderer.vertexArray renderer
@@ -173,7 +173,7 @@ loop worldTMVar renderer buildUI = do
   Im.popStyleVar 1
  
   (atomically $ tryReadTMVar worldTMVar) >>= \case
-    Just world -> render world renderer
+    Just world -> renderGame world renderer
     Nothing -> pure ()
 
   Im.render
