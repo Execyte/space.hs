@@ -124,8 +124,12 @@ drawTiles renderer =
 
       GL.drawElements GL.Triangles 6 GL.UnsignedInt nullPtr
 
-renderGame :: World -> Renderer -> IO ()
-renderGame world renderer =
+render :: World -> Renderer -> IO ()
+render world renderer = do
+  let
+    shader = Renderer.shader renderer
+    vertexArray = Renderer.vertexArray renderer
+
   GL.clear [GL.ColorBuffer]
 
   GL.currentProgram $= Just shader
@@ -138,8 +142,6 @@ loop :: TMVar World -> Renderer -> IO () -> IO ()
 loop worldTMVar renderer buildUI = do
   let
     window = Renderer.window renderer
-    shader = Renderer.shader renderer
-    vertexArray = Renderer.vertexArray renderer
 
   events <- pollEventsWithImGui
   let intents = eventsToIntents events
@@ -171,7 +173,7 @@ loop worldTMVar renderer buildUI = do
   Im.popStyleVar 1
  
   (atomically $ tryReadTMVar worldTMVar) >>= \case
-    Just world -> renderGame world renderer
+    Just world -> render world renderer
     Nothing -> pure ()
 
   Im.render
