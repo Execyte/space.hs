@@ -1,16 +1,28 @@
-module Network.Message(ClientMessage(..), ServerMessage(..)) where
+module Network.Message(ClientMessage(..), ServerMessage(..), Message(..)) where
 
-import Intent
 import Data.Text(Text)
 import Codec.Serialise(Serialise)
 import GHC.Generics(Generic)
+import Game.Intent(Intent)
 
-data ClientMessage = Ping | Hello | Bye
+type ServerToClientEntity = Int
+
+data Message =
+    Ping | Pong
+  | TryLogin Text Text | LoginSuccess ServerToClientEntity | LoginFail
+  | Action Intent
+  deriving Show
   deriving Generic
 
-data ServerMessage = Pong | Ok Int
+instance Serialise Message
+
+data ClientMessage a = Call Int a | Cast a
+  deriving Show
   deriving Generic
 
-instance Serialise ClientMessage
-instance Serialise ServerMessage
+data ServerMessage a = Reply Int a | Event a
+  deriving Show
+  deriving Generic
 
+instance Serialise a => Serialise (ClientMessage a)
+instance Serialise a => Serialise (ServerMessage a)

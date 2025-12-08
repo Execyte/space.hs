@@ -54,19 +54,23 @@ packages:
   original:
     hackage: quic-0.2.7
 - completed:
-    hackage: quic-simple-0.1.0.0@sha256:c9b03dbbe0824ffca27b10adba7091a843d43b9476bd6198b3de009e68aefaff,1975
-    pantry-tree:
-      sha256: 0ac267b9715fba002a3667b72957b9575366df408282380a895275aca2363a28
-      size: 482
-  original:
-    hackage: quic-simple-0.1.0.0
-- completed:
     hackage: x509-1.7.7@sha256:90eef2d745a654146fc1c325e035eaddac531e4d2145d4bc1dcf4b8fad439d34,2276
     pantry-tree:
       sha256: d81ffd09633c0417bcedbfc29f870cc843ec0750edd2f73c8fd60a5e5df278d2
       size: 1124
   original:
     hackage: x509-1.7.7
+- completed:
+    commit: 17ee397659a114bc1258e231f093b01a2781f5b3
+    git: https://gitlab.com/dpwiz/quic-simple/
+    name: quic-simple
+    pantry-tree:
+      sha256: 2eb06b9004c26f8ea9c3e90204c60f1bcf1da138c7561ab821035fd24bf3e41b
+      size: 686
+    version: 0.1.0.1
+  original:
+    commit: 17ee397659a114bc1258e231f093b01a2781f5b3
+    git: https://gitlab.com/dpwiz/quic-simple/
 snapshots:
 - completed:
     sha256: ecb944087cba3b8e85ff75d279bbb878615127e44d1b0485c511834c56ee6929

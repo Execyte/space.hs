@@ -82,6 +82,7 @@ default-extensions:
 - NamedFieldPuns
 - DisambiguateRecordFields
 - DuplicateRecordFields
+- OverloadedRecordDot
 - RecordWildCards
 - TupleSections
 - DeriveFoldable
@@ -106,6 +107,7 @@ default-extensions:
 - ExistentialQuantification
 - FunctionalDependencies
 - BlockArguments
+- ImportQualifiedPost
 - GADTs
 
 executables:
@@ -113,18 +115,6 @@ executables:
     main: Main.hs
     source-dirs:
     - app/client
-    - src/client
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - space-station15
-
-  space-station15-editor:
-    main: Main.hs
-    source-dirs:
-    - app/editor
     - src/client
     ghc-options:
     - -threaded

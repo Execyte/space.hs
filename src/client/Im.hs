@@ -1,4 +1,4 @@
-module Client.ImGui (
+module Im (
   beginFlags,
   withWindowFlags,
   withWindowOpenFlags,
@@ -10,8 +10,8 @@ import Data.Text(Text)
 
 import UnliftIO
 import DearImGui
-import qualified DearImGui.Internal.Text as ImText
-import qualified DearImGui.Raw as ImRaw -- I'm raw!
+import DearImGui.Internal.Text qualified as ImText
+import DearImGui.Raw qualified as ImRaw -- I'm raw!
 
 beginFlags :: MonadIO m => Text -> ImGuiWindowFlags -> m Bool
 beginFlags name flags = liftIO $ do

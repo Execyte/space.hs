@@ -1,4 +1,4 @@
-module Client.Renderer.Shader (
+module Game.Client.Renderer.Shader (
   Shader,
   fromByteStrings,
   fromFiles,
@@ -6,10 +6,10 @@ module Client.Renderer.Shader (
 ) where
 
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as ByteString
-
-import qualified Graphics.Rendering.OpenGL as GL
+import Data.ByteString qualified as ByteString
 import Data.StateVar
+
+import Graphics.Rendering.OpenGL qualified as GL
 
 type Shader = GL.Program
 

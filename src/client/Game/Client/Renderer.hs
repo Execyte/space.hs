@@ -1,24 +1,29 @@
-module Client.Renderer (
+module Game.Client.Renderer (
   Renderer(..),
   m44ToGL,
   loadImage
 ) where
 
-import qualified SDL
-import qualified Graphics.Rendering.OpenGL.GL as GL
-import Client.Renderer.Shader (Shader)
+import SDL qualified
+
+import Graphics.Rendering.OpenGL.GL qualified as GL
+
 import Codec.Picture
+
 import System.Exit
 import System.IO
+
 import Linear
 
-data Renderer = Renderer {
-  window :: SDL.Window,
-  shader :: Shader,
-  texture :: GL.TextureObject,
-  vertexBuffer :: GL.BufferObject,
-  vertexArray :: GL.VertexArrayObject
-}
+import Game.Client.Renderer.Shader (Shader)
+
+data Renderer = Renderer
+  { window :: SDL.Window
+  , shader :: Shader
+  , texture :: GL.TextureObject
+  , vertexBuffer :: GL.BufferObject
+  , vertexArray :: GL.VertexArrayObject
+  }
 
 m44ToGL :: M44 Float -> IO (GL.GLmatrix GL.GLfloat)
 m44ToGL m = GL.newMatrix GL.ColumnMajor [

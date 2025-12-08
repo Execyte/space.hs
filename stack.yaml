@@ -44,8 +44,9 @@ extra-deps:
 - serialise-0.2.6.1
 - stm-2.5.3.1
 - quic-0.2.7
-- quic-simple-0.1.0.0
 - x509-1.7.7
+- git: https://gitlab.com/dpwiz/quic-simple/
+  commit: '17ee397659a114bc1258e231f093b01a2781f5b3'
 
 # Override default flag values for project packages and extra-deps
 # flags: {}

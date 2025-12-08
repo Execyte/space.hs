@@ -1,40 +1,50 @@
 module Main (main) where
 
-import Control.Monad (foldM_, unless, when)
+import Control.Monad
+import Control.Concurrent
+import Control.Concurrent.STM 
+import Control.Concurrent.STM.TVar
+import Control.Concurrent.STM.TMVar
+
 import Data.Bits
 import Data.Text(Text)
 import Data.Maybe
+import Data.ByteString (ByteString)
+import Data.ByteString qualified as ByteString
+import Data.Vector.Storable (Vector)
+import Data.Vector.Storable qualified as Vector
+import Data.IntMap.Strict qualified as IntMap
+import Data.StateVar
+import Data.Foldable
+
 import System.Exit
 import System.IO
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as ByteString
-import Data.Vector.Storable (Vector)
-import qualified Data.Vector.Storable as Vector
-import Foreign
+
+import Foreign hiding (void)
 
 import Linear
+
 import Codec.Picture
-import Data.StateVar
-import Control.Concurrent.STM 
-import Control.Concurrent.STM.TVar
-import qualified Client.ImGui as Im
+
+import Game.Client.Renderer qualified as Renderer
+import Game.Client.Renderer.Shader qualified as Shader
+import Game.Client.Renderer (Renderer(..))
+import Im qualified
 import DearImGui.OpenGL3
-import qualified DearImGui.Raw.IO as ImIO
+import DearImGui.Raw.IO qualified as ImIO
 import DearImGui.SDL
+import SDL qualified
 import DearImGui.SDL.OpenGL
-import qualified Graphics.Rendering.OpenGL.GL as GL
-import qualified SDL
+import Graphics.Rendering.OpenGL.GL qualified as GL
 
-import Network.ConnectionStatus
 import Network.Message
-import qualified Direction
-import Intent (Intent)
-import qualified Intent
-import Client.Renderer (Renderer(..))
-import qualified Client.Renderer as Renderer
-import qualified Client.Renderer.Shader as Shader
+import Network.Client.ConnectionStatus
 
-import Client.UI.ConnectMenu
+import Game.Intent
+import Game.Direction
+import Game.UI.ConnectMenu
+import Game.Client
+import Game.Client.World
 
 -- TODO: implement tile layers
 type Tile = Int
@@ -62,28 +72,33 @@ tiles = [
 indices :: Vector Word32
 indices = Vector.fromList [0, 1, 2, 1, 2, 3]
 
-action :: Intent -> IO ()
-action Intent.Quit = exitSuccess
-action _ = pure ()
+action :: Client -> Intent -> IO ()
+action Client{connStatus} Quit = exitSuccess
+action Client{connStatus} x = do
+  status <- readTVarIO connStatus
+  case status of
+    Connected (_, _, event, _) -> event (Action x)
+    _ -> pure ()
+action _ _ = pure ()
 
 intentFromKey :: SDL.KeyboardEventData -> Maybe Intent
 intentFromKey (SDL.KeyboardEventData _ SDL.Released _ _) = Nothing
 intentFromKey (SDL.KeyboardEventData _ SDL.Pressed True _) = Nothing
 intentFromKey (SDL.KeyboardEventData _ SDL.Pressed False keysym) = Just $
   case SDL.keysymKeycode keysym of
-    SDL.KeycodeEscape -> Intent.Quit
-    SDL.KeycodeW -> Intent.Move Direction.Up
-    SDL.KeycodeS -> Intent.Move Direction.Down
-    SDL.KeycodeA -> Intent.Move Direction.Left
-    SDL.KeycodeD -> Intent.Move Direction.Right
-    _ -> Intent.Wait
+    SDL.KeycodeEscape -> Quit
+    SDL.KeycodeW -> Move UP
+    SDL.KeycodeS -> Move DOWN
+    SDL.KeycodeA -> Move LEFT
+    SDL.KeycodeD -> Move RIGHT
+    _ -> Wait
 
 eventsToIntents :: [SDL.Event] -> [Intent]
 eventsToIntents = mapMaybe (payloadToIntent . SDL.eventPayload)
   where
     payloadToIntent :: SDL.EventPayload -> Maybe Intent
     payloadToIntent (SDL.KeyboardEvent k)       = intentFromKey k
-    payloadToIntent SDL.QuitEvent               = Just Intent.Quit
+    payloadToIntent SDL.QuitEvent               = Just Quit
     payloadToIntent _                           = Nothing
 
 drawTiles :: Renderer -> [[Tile]] -> IO ()
@@ -117,17 +132,18 @@ drawTiles renderer =
 
       GL.drawElements GL.Triangles 6 GL.UnsignedInt nullPtr
 
-loop :: Renderer -> IO () -> IO ()
-loop renderer buildUI = do
+renderGame :: World -> Renderer -> IO ()
+renderGame world renderer = do
+  runDraw world
+  drawTiles renderer tiles
+
+loop :: Client -> IO () -> IO ()
+loop client@Client{world, renderer, sprites, textureMaps} buildUI = forever do
   let
     window = Renderer.window renderer
-    shader = Renderer.shader renderer
-    vertexArray = Renderer.vertexArray renderer
 
   events <- pollEventsWithImGui
   let intents = eventsToIntents events
-
-  let quit = Intent.Quit `elem` intents
 
   openGL3NewFrame
   sdl2NewFrame
@@ -153,19 +169,25 @@ loop renderer buildUI = do
 
   Im.popStyleVar 1
 
+  let
+    shader = Renderer.shader renderer
+    vertexArray = Renderer.vertexArray renderer
+
   GL.clear [GL.ColorBuffer]
 
   GL.currentProgram $= Just shader
   GL.bindVertexArrayObject $= Just vertexArray
-  drawTiles renderer tiles
+ 
+  (atomically $ tryReadTMVar world) >>= \case
+    Just world' -> renderGame world' renderer
+    Nothing -> pure ()
   GL.bindVertexArrayObject $= Nothing
 
   Im.render
   openGL3RenderDrawData =<< Im.getDrawData
 
   SDL.glSwapWindow window
-
-  unless quit $ loop renderer buildUI
+  forM_ intents (action client)
 
 main = do
   SDL.initialize [SDL.InitVideo]
@@ -280,11 +302,6 @@ main = do
 
   GL.bindVertexArrayObject $= Nothing
 
-  connInfo <- atomically $ newTVar $ Disconnected ""
-
-  connectMenu <- atomically $ newConnectMenu
-  let drawUI = drawConnectMenu connectMenu connInfo
-
   let renderer = Renderer {
     Renderer.window = window,
     Renderer.shader = shader,
@@ -293,7 +310,27 @@ main = do
     Renderer.vertexArray = vertexArray
   }
 
-  loop renderer drawUI
+  worldTMVar <- newEmptyTMVarIO
+  textureMaps <- newTVarIO []
+  sprites <- newTVarIO $ IntMap.empty
+  connInfo <- newTVarIO $ Disconnected ""
+
+  let client = Client {
+    world = worldTMVar,
+    connStatus = connInfo,
+    renderer = renderer,
+    textureMaps = textureMaps,
+    sprites = sprites
+  }
+
+  connectMenu <- atomically $ newConnectMenu
+  let drawUI = drawConnectMenu client connectMenu
+
+  void $ forkIO do
+    world <- atomically $ readTMVar worldTMVar
+    runGame (1/60) world
+
+  loop client drawUI
 
   openGL3Shutdown
   sdl2Shutdown
