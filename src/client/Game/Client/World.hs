@@ -8,7 +8,7 @@ makeWorld "World" [''Camera, ''Me, ''Position, ''NetEntity]
 
 type System' a = System World a
 
-withNetEntity f netEntity =
-  withReactive (enumLookup netEntity) >>= \case
+withNetEntity netEntity f =
+  withReactive (enumLookup (NetEntity netEntity)) >>= \case
     [localEntity] -> f localEntity
     _ -> pure ()

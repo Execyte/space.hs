@@ -3,6 +3,7 @@ module Game.Server.Simulation (World, System', initWorld, step, act, networkSyst
 import Apecs
 import Game
 
+import Data.Maybe
 import Data.HashMap.Strict(HashMap)
 import Data.HashMap.Strict qualified as HashMap
 
@@ -29,10 +30,6 @@ act _ _ = pure ()
 step :: Float -> System' ()
 step dT = pure ()
 
-compareC :: (Component c, Eq c) => Maybe c -> c -> Bool
-compareC (Just c1) c2 = c1 == c2
-compareC Nothing c2 = False
-
 networkSystem :: ServerNetworkInfo -> System' ()
 networkSystem netinfo = do
   dirties <- collect \(Dirty, Entity ent) -> Just ent
@@ -43,10 +40,15 @@ networkSystem netinfo = do
     case HashMap.lookup ent_ snapshots of
       Just snapshot -> do
         newPos <- get ent :: System' (Maybe Position)
-        case pos snapshot of
-          Just oldPos | compareC newPos oldPos -> lift $ atomically $
-            modifyTVar' netinfo.snapshots (HashMap.insert ent_ snapshot{pos = newPos})
-          _ -> pure ()
+        let newSnapshot = ComponentSnapshot{pos = either' newPos (pos snapshot)}
+
+        if newSnapshot /= snapshot then
+          lift $ do
+            conns <- readTVarIO netinfo.conns
+            forM_ conns $ \(_, (Connection{writeQueue})) -> atomically $ writeTBQueue writeQueue (Event $ ComponentSnapshotPacket ent_ newSnapshot)
+            atomically $ modifyTVar' netinfo.snapshots (HashMap.insert ent_ newSnapshot)
+        else
+          pure ()
       Nothing -> do
         newPos <- get ent :: System' (Maybe Position)
         let snapshot = ComponentSnapshot{pos = newPos}
@@ -54,3 +56,7 @@ networkSystem netinfo = do
           conns <- readTVarIO netinfo.conns
           forM_ conns $ \(_, (Connection{writeQueue})) -> atomically $ writeTBQueue writeQueue (Event $ ComponentSnapshotPacket ent_ snapshot)
           atomically $ modifyTVar' netinfo.snapshots (HashMap.insert ent_ snapshot)
+  where
+    either' Nothing b = b
+    either' a Nothing = a
+    either' a b = if b == a then b else a

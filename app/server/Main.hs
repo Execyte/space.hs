@@ -54,11 +54,20 @@ tryLogin server netinfo conn name pass = do
   world <- readTVarIO server.world
   case Map.lookup name loginInfo of
     Just acctPass | checkPass acctPass pass -> do
-      ent <- registerPlayer world name
-      atomically $ modifyTVar' netinfo.players \players -> Map.insert name ent players
       atomically $ modifyTVar' netinfo.logins \logins -> Map.insert conn.connId name logins
+      ent <- tryMakeEntity world netinfo name
       pure $ Just (LoginSuccess (unEntity ent))
     _ -> pure Nothing
+  where
+    tryMakeEntity world netinfo name = do
+      players <- readTVarIO netinfo.players
+      case Map.lookup name players of
+        Nothing -> do
+          ent <- registerPlayer world name
+          atomically $ modifyTVar' netinfo.players \players -> Map.insert name ent players
+          pure $ ent
+        Just ent ->
+          pure $ ent
 
 handleConnecting :: Server -> ServerNetworkInfo -> Connection -> ClientMessage Message -> IO (Connection, Maybe (ServerMessage Message))
 handleConnecting server netinfo conn (Call id (TryLogin name pass)) = do
