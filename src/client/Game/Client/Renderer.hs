@@ -1,28 +1,51 @@
 module Game.Client.Renderer (
   Renderer(..),
+  Vertex(..),
   m44ToGL,
   loadImage
 ) where
 
-import SDL qualified
-
-import Graphics.Rendering.OpenGL.GL qualified as GL
-
-import Codec.Picture
-
 import System.Exit
 import System.IO
+import Foreign
+import Foreign.C
+import Foreign.Storable
 
 import Linear
+import Codec.Picture
+import Graphics.Rendering.OpenGL.GL qualified as GL
+import SDL qualified
 
 import Game.Client.Renderer.Shader (Shader)
 
+data Vertex = Vertex (V2 Float) (V2 Float) (V4 Float)
+
+-- TODO: this is garbage, find a better way to do this
+instance Storable Vertex where
+  {-# INLINE sizeOf #-}
+  sizeOf _ =
+      sizeOf (undefined :: V2 Float)
+    + sizeOf (undefined :: V2 Float)
+    + sizeOf (undefined :: V4 Float)
+  {-# INLINE alignment #-}
+  alignment _ = alignment (undefined :: Float)
+  {-# INLINE poke #-}
+  poke ptr (Vertex position uv color) = do
+    poke (castPtr ptr) position
+    pokeByteOff ptr (sizeOf (undefined :: V2 Float)) uv
+    pokeByteOff ptr (sizeOf (undefined :: V4 Float)) color
+  {-# INLINE peek #-}
+  peek ptr = Vertex
+    <$> peek (castPtr ptr)
+    <*> peekByteOff ptr (sizeOf (undefined :: V2 Float))
+    <*> peekByteOff ptr (sizeOf (undefined :: V4 Float))
+
 data Renderer = Renderer
-  { window :: SDL.Window
-  , shader :: Shader
-  , texture :: GL.TextureObject
-  , vertexBuffer :: GL.BufferObject
-  , vertexArray :: GL.VertexArrayObject
+  { rendererWindow :: SDL.Window
+  , rendererShader :: Shader
+  , rendererTexture :: GL.TextureObject
+  , rendererVertexBuffer :: GL.BufferObject
+  , rendererVertexArray :: GL.VertexArrayObject
   }
 
 m44ToGL :: M44 Float -> IO (GL.GLmatrix GL.GLfloat)

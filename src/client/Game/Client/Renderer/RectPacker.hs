@@ -1,5 +1,5 @@
 module Game.Client.Renderer.RectPacker (
-  Packer(..),
+  Packer,
   newPacker,
   -- packRect,
   -- packRects

@@ -27,8 +27,8 @@ import Linear
 import Codec.Picture
 
 import Game.Client.Renderer qualified as Renderer
+import Game.Client.Renderer (Renderer(..), Vertex(..))
 import Game.Client.Renderer.Shader qualified as Shader
-import Game.Client.Renderer (Renderer(..))
 import Im qualified
 import DearImGui.OpenGL3
 import DearImGui.Raw.IO qualified as ImIO
@@ -60,14 +60,6 @@ tiles = [
     [0, 1, 0, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 0, 1, 0]
   ]
-
--- vertices :: Vector Float
--- vertices = Vector.fromList [
---   0, 0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
---   1, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
---   0, 1, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
---   1, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
---   ]
 
 indices :: Vector Word32
 indices = Vector.fromList [0, 1, 2, 1, 2, 3]
@@ -111,12 +103,12 @@ drawTiles renderer =
     pure $ succ y
     ) 0
   where
-    makeVertices :: Int -> Int -> Vector Float
+    makeVertices :: Int -> Int -> Vector Vertex
     makeVertices x y = Vector.fromList [
-      fx, fy, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-      fx + 1, fy, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-      fx, fy + 1, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-      fx + 1, fy + 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+      Vertex (V2 fx fy) (V2 0 0) (V4 1 1 1 1),
+      Vertex (V2 (fx + 1) fy) (V2 1 0) (V4 1 1 1 1),
+      Vertex (V2 fx (fy + 1)) (V2 0 1) (V4 1 1 1 1),
+      Vertex (V2 (fx + 1) (fy + 1)) (V2 1 1) (V4 1 1 1 1)
       ]
       where
         (fx, fy) = (fromIntegral x, fromIntegral y)
@@ -124,8 +116,10 @@ drawTiles renderer =
       let vertices = makeVertices x y
 
       let
-        floatSize = sizeOf (undefined :: Float)
-        verticesSize = fromIntegral $ floatSize * Vector.length vertices
+        vertexSize = sizeOf (undefined :: Vertex)
+        verticesSize = fromIntegral $ vertexSize * Vector.length vertices
+      
+      print (vertexSize, verticesSize)
       
       Vector.unsafeWith vertices $ \ptr ->
         GL.bufferData GL.ArrayBuffer $= (verticesSize, ptr, GL.DynamicDraw)
@@ -140,7 +134,7 @@ renderGame world renderer = do
 loop :: Client -> IO () -> IO ()
 loop client@Client{world, renderer, sprites, textureMaps} buildUI = forever do
   let
-    window = Renderer.window renderer
+    window = renderer.rendererWindow
 
   events <- pollEventsWithImGui
   let intents = eventsToIntents events
@@ -170,8 +164,8 @@ loop client@Client{world, renderer, sprites, textureMaps} buildUI = forever do
   Im.popStyleVar 1
 
   let
-    shader = Renderer.shader renderer
-    vertexArray = Renderer.vertexArray renderer
+    shader = renderer.rendererShader
+    vertexArray = renderer.rendererVertexArray
 
   GL.clear [GL.ColorBuffer]
 
@@ -303,11 +297,11 @@ main = do
   GL.bindVertexArrayObject $= Nothing
 
   let renderer = Renderer {
-    Renderer.window = window,
-    Renderer.shader = shader,
-    Renderer.texture = texture,
-    Renderer.vertexBuffer = vertexBuffer,
-    Renderer.vertexArray = vertexArray
+    rendererWindow = window,
+    rendererShader = shader,
+    rendererTexture = texture,
+    rendererVertexBuffer = vertexBuffer,
+    rendererVertexArray = vertexArray
   }
 
   worldTMVar <- newEmptyTMVarIO
