@@ -42,7 +42,7 @@ networkSystem netinfo = do
     modify ent \Dirty -> Not @Dirty
     case HashMap.lookup ent_ snapshots of
       Just snapshot -> do
-        newPos <- get ent :: System' (Maybe Position)
+        newPos <- get' @(Maybe Position) ent
         let newSnapshot = ComponentSnapshot{pos = either' newPos (pos snapshot)}
 
         if newSnapshot /= snapshot then
@@ -63,3 +63,6 @@ networkSystem netinfo = do
     either' Nothing b = b
     either' a Nothing = a
     either' a b = if b == a then b else a
+
+    get' :: Get World IO c => Entity -> System' c
+    get' = get
