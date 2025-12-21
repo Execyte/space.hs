@@ -1,7 +1,7 @@
 module Game.Client.Renderer.Shader (
   Shader,
-  fromByteStrings,
-  fromFiles,
+  shaderFromByteStrings,
+  shaderFromFiles,
   setUniform
 ) where
 
@@ -28,8 +28,8 @@ createShader type' code = do
 
   return (if success then Just shader else Nothing, logs)
 
-fromByteStrings :: [(GL.ShaderType, ByteString)] -> IO (Maybe Shader, String)
-fromByteStrings shaders = do
+shaderFromByteStrings :: [(GL.ShaderType, ByteString)] -> IO (Maybe Shader, String)
+shaderFromByteStrings shaders = do
   let
     compile program (type', code) = do
       (maybeShader, logs) <- createShader type' code
@@ -57,8 +57,8 @@ fromByteStrings shaders = do
       pure (if linked && valid then Just program else Nothing, logs)
     errors -> pure (Nothing, intercalate "\n" errors)
 
-fromFiles :: [(GL.ShaderType, FilePath)] -> IO (Maybe Shader, String)
-fromFiles = fromByteStrings <=< traverse readShader
+shaderFromFiles :: [(GL.ShaderType, FilePath)] -> IO (Maybe Shader, String)
+shaderFromFiles = shaderFromByteStrings <=< traverse readShader
   where readShader (type', path) = (type',) <$> ByteString.readFile path
 
 setUniform :: GL.Uniform a => Shader -> String -> a -> IO ()

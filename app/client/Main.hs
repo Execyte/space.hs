@@ -28,7 +28,6 @@ import Codec.Picture
 
 import Game.Client.Renderer qualified as Renderer
 import Game.Client.Renderer (Renderer(..), Vertex(..))
-import Game.Client.Renderer.Shader qualified as Shader
 import Im qualified
 import DearImGui.OpenGL3
 import DearImGui.Raw.IO qualified as ImIO
@@ -224,7 +223,7 @@ main = do
 
   GL.clearColor $= GL.Color4 0 0 0 0
 
-  maybeShader <- Shader.fromFiles [
+  maybeShader <- Renderer.shaderFromFiles [
     (GL.VertexShader, "assets/vertex.glsl"),
     (GL.FragmentShader, "assets/fragment.glsl")
     ]
@@ -258,13 +257,13 @@ main = do
       0
       $ GL.PixelData GL.RGBA GL.UnsignedByte ptr
 
-  Shader.setUniform shader "u_texture" (GL.TextureUnit 0)
+  Renderer.setUniform shader "u_texture" (GL.TextureUnit 0)
 
   model <- Renderer.m44ToGL $ identity * V4 32 32 1 1
-  Shader.setUniform shader "u_model" model
+  Renderer.setUniform shader "u_model" model
 
   projection <- Renderer.m44ToGL $ ortho 0 640 480 0 (-1) 1
-  Shader.setUniform shader "u_projection" projection
+  Renderer.setUniform shader "u_projection" projection
 
   vertexArray <- GL.genObjectName
   vertexBuffer <- GL.genObjectName

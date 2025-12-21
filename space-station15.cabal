@@ -89,6 +89,7 @@ library
     , aeson
     , apecs
     , async
+    , atlas
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -120,8 +121,8 @@ executable space-station15-client
   other-modules:
       Game.Client
       Game.Client.Renderer
-      Game.Client.Renderer.RectPacker
       Game.Client.Renderer.Shader
+      Game.Client.Renderer.Vertex
       Game.Client.World
       Game.UI.ConnectMenu
       Im
@@ -185,6 +186,7 @@ executable space-station15-client
     , aeson
     , apecs
     , async
+    , atlas
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -276,6 +278,7 @@ executable space-station15-server
     , aeson
     , apecs
     , async
+    , atlas
     , base >=4.7 && <5
     , bytestring
     , containers
