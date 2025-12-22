@@ -9,7 +9,7 @@ module Game.Client.Renderer (
   rendererAtlasTexture,
   rendererTextures,
   newRenderer,
-  
+
   atlasSize,
 
   loadTexture,
@@ -17,6 +17,7 @@ module Game.Client.Renderer (
 
   draw,
 
+  updateViewport,
   m44ToGL,
   loadImage,
 
@@ -78,7 +79,7 @@ resetTexture texture = do
     $ GL.PixelData GL.RGBA GL.UnsignedByte nullPtr
 
   GL.textureBinding GL.Texture2D $= Nothing
-  
+
   pure texture
 
 newRenderer :: SDL.Window -> IO Renderer
@@ -86,7 +87,7 @@ newRenderer window = do
   [vertexBuffer, elementBuffer] <- GL.genObjectNames 2
   vertexArray <- GL.genObjectName
   texture <- GL.genObjectName >>= resetTexture
-  
+
   atlas <- create atlasSize atlasSize
 
   pure $ Renderer {
@@ -111,14 +112,14 @@ loadTexture renderer@Renderer{
     , imageHeight = height
     , imageData = pixels
     } <- loadImage file
-  
+
   params@(texture', rect) <- tryPack atlas texture width height
 
   let
     V4
       (fromIntegral -> x) (fromIntegral -> y)
       (fromIntegral -> width') (fromIntegral -> height') = rect
-  
+
   GL.activeTexture $= GL.TextureUnit 0
   GL.textureBinding GL.Texture2D $= Just texture'
 
@@ -129,9 +130,9 @@ loadTexture renderer@Renderer{
       (GL.TexturePosition2D x y)
       (GL.TextureSize2D width' height')
       $ GL.PixelData GL.RGBA GL.UnsignedByte ptr
-  
+
   GL.textureBinding GL.Texture2D $= Nothing
-  
+
   let textures' = HashMap.insert name params textures
 
   pure $ renderer {
@@ -192,6 +193,14 @@ draw renderer name
       Vertex (V2 x (y + h)) (V2 tx (ty + th)) (V4 1 1 1 1),
       Vertex (V2 (x + w) (y + h)) (V2 (tx + tw) (ty + th)) (V4 1 1 1 1)
       ]
+
+updateViewport :: Renderer -> Int32 -> Int32 -> IO ()
+updateViewport Renderer{ rendererShader = maybeShader }
+  w@(fromIntegral -> w') h@(fromIntegral -> h') = do
+  GL.viewport $= (GL.Position 0 0, GL.Size w h)
+  case maybeShader of
+    Just shader -> setUniform shader "u_projection" =<< m44ToGL (ortho 0 w' h' 0 (-1) 1)
+    Nothing -> pure ()
 
 -- TODO: apparently M44 has Storable, so we can just pass its pointer to opengl without having to
 -- use this function, so it appears it's useless (and i'm not a big fan of it too) and it shall be
