@@ -1,14 +1,18 @@
 module Game.Client.Renderer.Shader (
   Shader,
-  fromByteStrings,
-  fromFiles,
+  shaderFromByteStrings,
+  shaderFromFiles,
   setUniform
 ) where
 
+import Data.List
+import Data.Maybe
+import Control.Monad ((<=<))
+import Data.Traversable
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as ByteString
-import Data.StateVar
 
+import Data.StateVar
 import Graphics.Rendering.OpenGL qualified as GL
 
 type Shader = GL.Program
@@ -24,20 +28,25 @@ createShader type' code = do
 
   return (if success then Just shader else Nothing, logs)
 
-fromByteStrings :: [(GL.ShaderType, ByteString)] -> IO (Maybe Shader, String)
-fromByteStrings shaders = attach shaders =<< GL.createProgram
-  where
-    attach ((type', code):shaders) program = do
+shaderFromByteStrings :: [(GL.ShaderType, ByteString)] -> IO (Maybe Shader, String)
+shaderFromByteStrings shaders = do
+  let
+    compile program (type', code) = do
       (maybeShader, logs) <- createShader type' code
 
-      case maybeShader of
+      error <- case maybeShader of
         Just shader -> do
           GL.attachShader program shader
           GL.deleteObjectName shader
-          attach shaders program
-        Nothing -> do
-          return (Nothing, logs)
-    attach [] program = do
+          pure Nothing
+        Nothing -> pure $ Just logs
+      
+      pure (program, error)
+
+  (program, results) <- flip (mapAccumM compile) shaders =<< GL.createProgram
+
+  case catMaybes results of
+    [] -> do
       GL.linkProgram program
       GL.validateProgram program
 
@@ -45,32 +54,12 @@ fromByteStrings shaders = attach shaders =<< GL.createProgram
       valid <- GL.validateStatus program
       logs <- GL.programInfoLog program
 
-      return (if linked && valid then Just program else Nothing, logs)
+      pure (if linked && valid then Just program else Nothing, logs)
+    errors -> pure (Nothing, intercalate "\n" errors)
 
-fromFiles :: [(GL.ShaderType, FilePath)] -> IO (Maybe Shader, String)
-fromFiles shaders = attach shaders =<< GL.createProgram
-  where
-    attach ((type', file):shaders) program = do
-      code <- ByteString.readFile file
-
-      (maybeShader, logs) <- createShader type' code
-
-      case maybeShader of
-        Just shader -> do
-          GL.attachShader program shader
-          GL.deleteObjectName shader
-          attach shaders program
-        Nothing -> do
-          return (Nothing, logs)
-    attach [] program = do
-      GL.linkProgram program
-      GL.validateProgram program
-
-      linked <- GL.linkStatus program
-      valid <- GL.validateStatus program
-      logs <- GL.programInfoLog program
-
-      return (if linked && valid then Just program else Nothing, logs)
+shaderFromFiles :: [(GL.ShaderType, FilePath)] -> IO (Maybe Shader, String)
+shaderFromFiles = shaderFromByteStrings <=< traverse readShader
+  where readShader (type', path) = (type',) <$> ByteString.readFile path
 
 setUniform :: GL.Uniform a => Shader -> String -> a -> IO ()
 setUniform shader name value = do

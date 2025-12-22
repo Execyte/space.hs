@@ -1,50 +1,43 @@
 module Main (main) where
 
-import Control.Monad
-import Control.Concurrent
-import Control.Concurrent.STM 
-import Control.Concurrent.STM.TVar
-import Control.Concurrent.STM.TMVar
-
 import Data.Bits
-import Data.Text(Text)
-import Data.Maybe
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as ByteString
-import Data.Vector.Storable (Vector)
-import Data.Vector.Storable qualified as Vector
-import Data.IntMap.Strict qualified as IntMap
-import Data.StateVar
 import Data.Foldable
-
+import Data.HashMap.Strict qualified as HashMap
+import Data.Maybe
+import Data.Text (Text)
+import Control.Monad
 import System.Exit
 import System.IO
-
+import Control.Concurrent
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TVar
+import Control.Concurrent.STM.TMVar
+import Data.Vector.Storable (Vector)
+import Data.Vector.Storable qualified as Vector
 import Foreign hiding (void)
 
 import Linear
-
 import Codec.Picture
-
-import Game.Client.Renderer qualified as Renderer
-import Game.Client.Renderer.Shader qualified as Shader
-import Game.Client.Renderer (Renderer(..))
-import Im qualified
+import Data.StateVar
 import DearImGui.OpenGL3
 import DearImGui.Raw.IO qualified as ImIO
 import DearImGui.SDL
-import SDL qualified
 import DearImGui.SDL.OpenGL
 import Graphics.Rendering.OpenGL.GL qualified as GL
+import SDL qualified
 
-import Network.Message
-import Network.Client.ConnectionStatus
-
-import Game.Intent
 import Game.Direction
-import Game.UI.ConnectMenu
+import Game.Intent
 import Game.Client
 import Game.Client.World
+import Game.UI.ConnectMenu
+import Network.Message
+import Network.Client.ConnectionStatus
+import Game.Client.Renderer qualified as Renderer
+import Game.Client.Renderer (Renderer(..), Vertex(..))
+import Im qualified
 
 -- TODO: implement tile layers
 type Tile = Int
@@ -60,14 +53,6 @@ tiles = [
     [0, 1, 0, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 1, 0, 1, 0]
   ]
-
--- vertices :: Vector Float
--- vertices = Vector.fromList [
---   0, 0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
---   1, 0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
---   0, 1, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
---   1, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
---   ]
 
 indices :: Vector Word32
 indices = Vector.fromList [0, 1, 2, 1, 2, 3]
@@ -110,13 +95,15 @@ drawTiles renderer =
       ) 0 row
     pure $ succ y
     ) 0
+-- drawTiles _ _ = pure () -- we kinda broke it now because of the TEXTURE UPDATE™, so right now we
+--                         -- don't run it so that it doesn't freak out and combust
   where
-    makeVertices :: Int -> Int -> Vector Float
+    makeVertices :: Int -> Int -> Vector Vertex
     makeVertices x y = Vector.fromList [
-      fx, fy, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-      fx + 1, fy, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0,
-      fx, fy + 1, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-      fx + 1, fy + 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+      Vertex (V2 fx fy) (V2 0 0) (V4 1 1 1 1),
+      Vertex (V2 (fx + 1) fy) (V2 32 0) (V4 1 1 1 1),
+      Vertex (V2 fx (fy + 1)) (V2 0 32) (V4 1 1 1 1),
+      Vertex (V2 (fx + 1) (fy + 1)) (V2 32 32) (V4 1 1 1 1)
       ]
       where
         (fx, fy) = (fromIntegral x, fromIntegral y)
@@ -124,9 +111,9 @@ drawTiles renderer =
       let vertices = makeVertices x y
 
       let
-        floatSize = sizeOf (undefined :: Float)
-        verticesSize = fromIntegral $ floatSize * Vector.length vertices
-      
+        vertexSize = sizeOf (undefined :: Vertex)
+        verticesSize = fromIntegral $ vertexSize * Vector.length vertices
+
       Vector.unsafeWith vertices $ \ptr ->
         GL.bufferData GL.ArrayBuffer $= (verticesSize, ptr, GL.DynamicDraw)
 
@@ -135,12 +122,26 @@ drawTiles renderer =
 renderGame :: World -> Renderer -> IO ()
 renderGame world renderer = do
   runDraw world
-  drawTiles renderer tiles
+
+  ((/ 1000) . fromIntegral -> seconds) <- SDL.ticks
+  (V2 (fromIntegral -> w) (fromIntegral -> h)) <- get $ SDL.windowSize renderer.rendererWindow
+
+  let
+    x = cos (seconds * 3) * 3
+    y = sin (seconds * 3) * 3
+    w' = w / 32
+    h' = h / 32
+    cx = (w' - 1) / 2
+    cy = (h' - 1) / 2
+    x' = cx - x
+    y' = cy - y
+
+  Renderer.draw renderer "tile" (V2 x' y') (V2 1 1)
 
 loop :: Client -> IO () -> IO ()
-loop client@Client{world, renderer, sprites, textureMaps} buildUI = forever do
+loop client@Client{world, renderer} buildUI = forever do
   let
-    window = Renderer.window renderer
+    window = renderer.rendererWindow
 
   events <- pollEventsWithImGui
   let intents = eventsToIntents events
@@ -170,14 +171,19 @@ loop client@Client{world, renderer, sprites, textureMaps} buildUI = forever do
   Im.popStyleVar 1
 
   let
-    shader = Renderer.shader renderer
-    vertexArray = Renderer.vertexArray renderer
+    shader = renderer.rendererShader
+    vertexArray = renderer.rendererVertexArray
 
   GL.clear [GL.ColorBuffer]
 
-  GL.currentProgram $= Just shader
+  GL.currentProgram $= shader -- shader might be Nothing, in which case some stupid utter buffoon
+                              -- broke the part where the shader is initialized and loaded into the
+                              -- renderer, causing the program to combust spontaneously during
+                              -- rendering
+                              -- i can't be bothered to check if it's Nothing life is too short for
+                              -- that kinda shit
   GL.bindVertexArrayObject $= Just vertexArray
- 
+
   (atomically $ tryReadTMVar world) >>= \case
     Just world' -> renderGame world' renderer
     Nothing -> pure ()
@@ -219,6 +225,8 @@ main = do
   gl <- SDL.glCreateContext window
   SDL.showWindow window
 
+  renderer <- Renderer.newRenderer window
+
   im <- Im.createContext
   _ <- sdl2InitForOpenGL window gl
   _ <- openGL3Init
@@ -232,7 +240,7 @@ main = do
 
   GL.clearColor $= GL.Color4 0 0 0 0
 
-  maybeShader <- Shader.fromFiles [
+  maybeShader <- Renderer.shaderFromFiles [
     (GL.VertexShader, "assets/vertex.glsl"),
     (GL.FragmentShader, "assets/fragment.glsl")
     ]
@@ -244,83 +252,83 @@ main = do
       exitFailure
     (Just shader, _) -> return shader
 
-  texture <- GL.genObjectName
-  GL.activeTexture $= GL.TextureUnit 0
-  GL.textureBinding GL.Texture2D $= Just texture
+  -- ok uh haskell doesn't like when i shadow this name so i guess i'll just put an apostrophe here
+  -- it looks worse but we cannot have good-looking code in this world
+  let renderer' = renderer { rendererShader = Just shader }
 
-  GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
+  -- texture <- GL.genObjectName
+  -- GL.activeTexture $= GL.TextureUnit 0
+  -- GL.textureBinding GL.Texture2D $= Just texture
 
-  image <- Renderer.loadImage "assets/tile.png"
+  -- GL.textureFilter GL.Texture2D $= ((GL.Linear', Nothing), GL.Linear')
 
-  let
-    width = fromIntegral (imageWidth image)
-    height = fromIntegral (imageHeight image)
-    pixels = imageData image
+  -- image <- Renderer.loadImage "assets/tile.png"
 
-  Vector.unsafeWith pixels $ \ptr ->
-    GL.texImage2D
-      GL.Texture2D
-      GL.NoProxy 0
-      GL.RGBA'
-      (GL.TextureSize2D width height)
-      0
-      $ GL.PixelData GL.RGBA GL.UnsignedByte ptr
+  -- let
+  --   width = fromIntegral (imageWidth image)
+  --   height = fromIntegral (imageHeight image)
+  --   pixels = imageData image
 
-  Shader.setUniform shader "u_texture" (GL.TextureUnit 0)
+  -- Vector.unsafeWith pixels $ \ptr ->
+  --   GL.texImage2D
+  --     GL.Texture2D
+  --     GL.NoProxy 0
+  --     GL.RGBA'
+  --     (GL.TextureSize2D width height)
+  --     0
+  --     $ GL.PixelData GL.RGBA GL.UnsignedByte ptr
+
+  -- Renderer.setUniform shader "u_texture" (GL.TextureUnit 0)
+
+  -- please don't make me do this haskell
+  renderer'' <- Renderer.loadTexture renderer' "tile" "assets/tile.png"
 
   model <- Renderer.m44ToGL $ identity * V4 32 32 1 1
-  Shader.setUniform shader "u_model" model
+  Renderer.setUniform shader "u_model" model
 
-  projection <- Renderer.m44ToGL $ ortho 0 640 480 0 (-1) 1
-  Shader.setUniform shader "u_projection" projection
+  projection <- Renderer.m44ToGL $ ortho 0 800 600 0 (-1) 1
+  Renderer.setUniform shader "u_projection" projection
 
-  vertexArray <- GL.genObjectName
-  vertexBuffer <- GL.genObjectName
-  elementBuffer <- GL.genObjectName
+  Renderer.setUniform @Word32 shader "u_atlas_size" Renderer.atlasSize
+
+  let
+    vertexBuffer = renderer''.rendererVertexBuffer
+    elementBuffer = renderer''.rendererElementBuffer
+    vertexArray = renderer''.rendererVertexArray
 
   GL.bindVertexArrayObject $= Just vertexArray
 
   let
-    floatSize = sizeOf (undefined :: Float)
+    -- floatSize = sizeOf (undefined :: Float)
     intSize = sizeOf (undefined :: Int)
     indicesSize = fromIntegral $ intSize * Vector.length indices
-  
+
   GL.bindBuffer GL.ArrayBuffer $= Just vertexBuffer
   GL.bindBuffer GL.ElementArrayBuffer $= Just elementBuffer
   Vector.unsafeWith indices $ \ptr -> do
     GL.bufferData GL.ElementArrayBuffer $= (indicesSize, ptr, GL.StaticDraw)
 
-  GL.vertexAttribPointer (GL.AttribLocation 0) $=
-    (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 nullPtr)
-  GL.vertexAttribPointer (GL.AttribLocation 1) $=
-    (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 $ plusPtr nullPtr $ floatSize * 2)
-  GL.vertexAttribPointer (GL.AttribLocation 2) $=
-    (GL.ToFloat, GL.VertexArrayDescriptor 4 GL.Float 32 $ plusPtr nullPtr $ floatSize * 4)
-  GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
-  GL.vertexAttribArray (GL.AttribLocation 1) $= GL.Enabled
-  GL.vertexAttribArray (GL.AttribLocation 2) $= GL.Enabled
+  -- GL.vertexAttribPointer (GL.AttribLocation 0) $=
+  --   (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 nullPtr)
+  -- GL.vertexAttribPointer (GL.AttribLocation 1) $=
+  --   (GL.ToFloat, GL.VertexArrayDescriptor 2 GL.Float 32 $ plusPtr nullPtr $ floatSize * 2)
+  -- GL.vertexAttribPointer (GL.AttribLocation 2) $=
+  --   (GL.ToFloat, GL.VertexArrayDescriptor 4 GL.Float 32 $ plusPtr nullPtr $ floatSize * 4)
+  -- GL.vertexAttribArray (GL.AttribLocation 0) $= GL.Enabled
+  -- GL.vertexAttribArray (GL.AttribLocation 1) $= GL.Enabled
+  -- GL.vertexAttribArray (GL.AttribLocation 2) $= GL.Enabled
+
+  Renderer.setVertexAttribs @Vertex undefined vertexArray
 
   GL.bindVertexArrayObject $= Nothing
 
-  let renderer = Renderer {
-    Renderer.window = window,
-    Renderer.shader = shader,
-    Renderer.texture = texture,
-    Renderer.vertexBuffer = vertexBuffer,
-    Renderer.vertexArray = vertexArray
-  }
-
   worldTMVar <- newEmptyTMVarIO
-  textureMaps <- newTVarIO []
-  sprites <- newTVarIO $ IntMap.empty
   connInfo <- newTVarIO $ Disconnected ""
 
   let client = Client {
     world = worldTMVar,
     connStatus = connInfo,
-    renderer = renderer,
-    textureMaps = textureMaps,
-    sprites = sprites
+    renderer = renderer''
   }
 
   connectMenu <- atomically $ newConnectMenu

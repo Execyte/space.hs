@@ -80,6 +80,7 @@ library
       BlockArguments
       ImportQualifiedPost
       GADTs
+      ViewPatterns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       JuicyPixels
@@ -89,6 +90,7 @@ library
     , aeson
     , apecs
     , async
+    , atlas
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -101,6 +103,7 @@ library
     , linear
     , memory
     , network
+    , primitive
     , quic
     , quic-simple
     , random
@@ -120,8 +123,8 @@ executable space-station15-client
   other-modules:
       Game.Client
       Game.Client.Renderer
-      Game.Client.Renderer.RectPacker
       Game.Client.Renderer.Shader
+      Game.Client.Renderer.Vertex
       Game.Client.World
       Game.UI.ConnectMenu
       Im
@@ -176,6 +179,7 @@ executable space-station15-client
       BlockArguments
       ImportQualifiedPost
       GADTs
+      ViewPatterns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
@@ -185,6 +189,7 @@ executable space-station15-client
     , aeson
     , apecs
     , async
+    , atlas
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -197,6 +202,7 @@ executable space-station15-client
     , linear
     , memory
     , network
+    , primitive
     , quic
     , quic-simple
     , random
@@ -267,6 +273,7 @@ executable space-station15-server
       BlockArguments
       ImportQualifiedPost
       GADTs
+      ViewPatterns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
@@ -276,6 +283,7 @@ executable space-station15-server
     , aeson
     , apecs
     , async
+    , atlas
     , base >=4.7 && <5
     , bytestring
     , containers
@@ -288,6 +296,7 @@ executable space-station15-server
     , linear
     , memory
     , network
+    , primitive
     , quic
     , quic-simple
     , random

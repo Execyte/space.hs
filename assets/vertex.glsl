@@ -1,5 +1,6 @@
-#version 330 core
+#version 430 core
 
+layout (location = 63) uniform uint u_atlas_size;
 uniform mat4 u_model;
 uniform mat4 u_projection;
 
@@ -13,6 +14,6 @@ out vec4 frag_color;
 void main()
 {
     gl_Position = u_projection * u_model * vec4(position, 0, 1);
-    frag_uv = uv;
+    frag_uv = uv / u_atlas_size;
     frag_color = color;
 }

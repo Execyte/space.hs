@@ -61,6 +61,13 @@ packages:
   original:
     hackage: x509-1.7.7
 - completed:
+    hackage: atlas-0@sha256:32c168b5b9fd4e843376ca9eb02ef33b233392cdbbcbf0b87c5f2cee00209861,1343
+    pantry-tree:
+      sha256: 7b71df057578695648852b527332460ab6ac5c968a043d19174942468930e756
+      size: 448
+  original:
+    hackage: atlas-0
+- completed:
     commit: 17ee397659a114bc1258e231f093b01a2781f5b3
     git: https://gitlab.com/dpwiz/quic-simple/
     name: quic-simple

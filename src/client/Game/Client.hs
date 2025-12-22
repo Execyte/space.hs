@@ -19,12 +19,8 @@ import Data.IntMap.Strict(IntMap)
 import Graphics.Rendering.OpenGL qualified as GL
 
 -- | The client datatype. This stores pretty much everything relevant to the client, especially the world and connection status.
--- 
--- TODO: move textureMaps, sprites and renderer out of this datatype. It is bloating it completely and well, most things don't even require those fields.
 data Client = Client
   { world :: TMVar World
-  , textureMaps :: TVar [GL.TextureObject]
-  , sprites :: TVar (IntMap (Int, V4 Int))
   , connStatus :: TVar (ConnectionStatus Message Message)
   , renderer :: Renderer
   }

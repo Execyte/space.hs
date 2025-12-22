@@ -51,6 +51,8 @@ dependencies:
 - stm
 - extra
 - JuicyPixels
+- atlas
+- primitive
 
 library:
   source-dirs:
@@ -110,6 +112,7 @@ default-extensions:
 - BlockArguments
 - ImportQualifiedPost
 - GADTs
+- ViewPatterns
 
 executables:
   space-station15-client:
