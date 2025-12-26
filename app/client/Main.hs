@@ -87,38 +87,26 @@ eventsToIntents = mapMaybe (payloadToIntent . SDL.eventPayload)
     payloadToIntent SDL.QuitEvent               = Just Quit
     payloadToIntent _                           = Nothing
 
+handleWindowEvents :: Renderer -> [SDL.Event] -> IO ()
+handleWindowEvents renderer = mapM_ (handle . SDL.eventPayload)
+  where
+    handle (SDL.WindowResizedEvent r) =
+      let
+        SDL.WindowResizedEventData _ (V2 w h) = r
+      in Renderer.updateViewport renderer w h
+    handle _ = pure ()
+
 drawTiles :: Renderer -> [[Tile]] -> IO ()
 drawTiles renderer =
   foldM_ (\y row -> do
     foldM_ (\x tile -> do
-      when (tile > 0) $ drawTile x y
+      when (tile > 0) $ Renderer.draw renderer "tile" (V2 x y) (V2 1 1)
       pure $ succ x
       ) 0 row
     pure $ succ y
     ) 0
 -- drawTiles _ _ = pure () -- we kinda broke it now because of the TEXTURE UPDATE™, so right now we
 --                         -- don't run it so that it doesn't freak out and combust
-  where
-    makeVertices :: Int -> Int -> Vector Vertex
-    makeVertices x y = Vector.fromList [
-      Vertex (V2 fx fy) (V2 0 0) (V4 1 1 1 1),
-      Vertex (V2 (fx + 1) fy) (V2 32 0) (V4 1 1 1 1),
-      Vertex (V2 fx (fy + 1)) (V2 0 32) (V4 1 1 1 1),
-      Vertex (V2 (fx + 1) (fy + 1)) (V2 32 32) (V4 1 1 1 1)
-      ]
-      where
-        (fx, fy) = (fromIntegral x, fromIntegral y)
-    drawTile x y = do
-      let vertices = makeVertices x y
-
-      let
-        vertexSize = sizeOf (undefined :: Vertex)
-        verticesSize = fromIntegral $ vertexSize * Vector.length vertices
-
-      Vector.unsafeWith vertices $ \ptr ->
-        GL.bufferData GL.ArrayBuffer $= (verticesSize, ptr, GL.DynamicDraw)
-
-      GL.drawElements GL.Triangles 6 GL.UnsignedInt nullPtr
 
 renderGame :: World -> Renderer -> IO ()
 renderGame world renderer = do
@@ -145,6 +133,7 @@ loop client@Client{world, renderer} buildUI = forever do
     window = renderer.rendererWindow
 
   events <- pollEventsWithImGui
+  handleWindowEvents renderer events
   let intents = eventsToIntents events
 
   openGL3NewFrame
@@ -234,8 +223,6 @@ main = do
 
   ImIO.setIniFilename nullPtr
 
-  GL.viewport $= (GL.Position 0 0, GL.Size 800 600)
-
   GL.blend $= GL.Enabled
   GL.blendFunc $= (GL.SrcAlpha, GL.OneMinusSrcAlpha)
 
@@ -287,9 +274,6 @@ main = do
   model <- Renderer.m44ToGL $ identity * V4 32 32 1 1
   Renderer.setUniform shader "u_model" model
 
-  projection <- Renderer.m44ToGL $ ortho 0 800 600 0 (-1) 1
-  Renderer.setUniform shader "u_projection" projection
-
   Renderer.setUniform @Word32 shader "u_atlas_size" Renderer.atlasSize
 
   let
@@ -322,6 +306,8 @@ main = do
   Renderer.setVertexAttribs @Vertex undefined vertexArray
 
   GL.bindVertexArrayObject $= Nothing
+
+  Renderer.updateViewport renderer'' 800 600
 
   worldTMVar <- newEmptyTMVarIO
   connInfo <- newTVarIO $ Disconnected ""
