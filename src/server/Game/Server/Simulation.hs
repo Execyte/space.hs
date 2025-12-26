@@ -22,8 +22,8 @@ import Types
 
 -- | The act function is where the player's intents are processed.
 act :: Entity -> Intent -> System' ()
-act ent (Move DOWN) = modify ent \(Position x y) -> (Position x (y - 1), Dirty)
-act ent (Move UP) = modify ent \(Position x y) -> (Position x (y + 1), Dirty)
+act ent (Move UP) = modify ent \(Position x y) -> (Position x (y - 1), Dirty)
+act ent (Move DOWN) = modify ent \(Position x y) -> (Position x (y + 1), Dirty)
 act ent (Move LEFT) = modify ent \(Position x y) -> (Position (x - 1) y, Dirty)
 act ent (Move RIGHT) = modify ent \(Position x y) -> (Position (x + 1) y, Dirty)
 act _ _ = pure ()

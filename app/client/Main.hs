@@ -122,7 +122,7 @@ drawTiles renderer =
 
 renderGame :: World -> Renderer -> IO ()
 renderGame world renderer = do
-  runDraw world
+  runDraw world renderer
 
   ((/ 1000) . fromIntegral -> seconds) <- SDL.ticks
   (V2 (fromIntegral -> w) (fromIntegral -> h)) <- get $ SDL.windowSize renderer.rendererWindow

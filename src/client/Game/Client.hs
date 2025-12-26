@@ -7,6 +7,7 @@ import Linear
 import Game
 import Game.Client.World
 import Game.Client.Renderer(Renderer)
+import Game.Client.Renderer qualified as Renderer
 
 import Network.Message
 import Network.Client.ConnectionStatus
@@ -15,8 +16,6 @@ import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TMVar
 
 import Data.IntMap.Strict(IntMap)
-
-import Graphics.Rendering.OpenGL qualified as GL
 
 -- | The client datatype. This stores pretty much everything relevant to the client, especially the world and connection status.
 data Client = Client
@@ -37,15 +36,15 @@ step :: Float -> System' ()
 step dT = pure ()
 
 -- | Draw the world to the screen.
-draw :: System' ()
-draw = pure ()
+draw :: Renderer -> System' ()
+draw renderer = cmapM_ \(Me, Position x y) -> lift $ Renderer.draw renderer "tile" (V2 x y) (V2 1 1)
 
 -- | Main function to set globals and other things when the world needs to be initialized.
 initialise :: System' ()
 initialise = set global $ Camera 0.0 0.0
 
-runDraw :: World -> IO ()
-runDraw world = runWith world draw
+runDraw :: World -> Renderer -> IO ()
+runDraw world renderer = runWith world (draw renderer)
 
 runGame :: Float -> World -> IO ()
 runGame dT world = runWith world $ step dT
