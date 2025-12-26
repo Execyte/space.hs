@@ -7,7 +7,6 @@ import Control.Concurrent.STM.TVar
 import Control.Concurrent.Async
 
 import Network.QUIC.Simple qualified as QUIC
-import Network.Snapshot
 import Network.Server
 import Network.Server.NetStatus
 import Network.Message
@@ -71,6 +70,6 @@ main = do
     Apecs.runWith world' $ do
       act ent action
       step (1/60)
-      networkSystem netstatus
+      sendUpdatesToClients netstatus
 
   QUIC.runServerStateful "127.0.0.1" 2525 (setup conns connIds) (teardown conns) handler

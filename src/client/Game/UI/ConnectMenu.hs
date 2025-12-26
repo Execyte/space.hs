@@ -14,12 +14,14 @@ import Control.Monad.Extra(whenM)
 import Control.Exception(try, SomeException(..))
 
 import Network.Message
-import Network.Login
 import Network.Client
 import Network.Client.Manager
 import Network.Client.ConnectionStatus
 
 import Apecs
+
+import Types
+import Network.Types
 
 import Linear
 
@@ -72,11 +74,11 @@ drawConnectMenu client ConnectMenu{server_ip, username, password} = do
             where
               tryLogin name pass world connStatus = do
                 (Connected (_, call, _, _)) <- readTVarIO connStatus
-                void $ call (TryLogin (LoginName name) pass) >>= \case
-                  (LoginSuccess e) -> do
+                void $ call (TryLogin (LoginName name) (Password pass)) >>= \(LoginStatusPacket status) -> case status of
+                  LoginSuccess e -> do
                     putStrLn $ "YAY! LOGIN SUCCESS! MY ENTITY NUMBER IS " <> (show e)
                     world' <- initGame
-                    void $ runWith world' $ newEntity (Me, Position 0 0, NetEntity e)
+                    void $ runWith world' $ newEntity (Me, Position 0 0, NetEntity $ ServerEntityId e)
                     atomically $ writeTMVar world world'
                   LoginFail -> do
                     atomically $ writeTVar connStatus $ Disconnected "server reported login fail"

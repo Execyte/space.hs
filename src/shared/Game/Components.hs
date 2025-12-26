@@ -1,6 +1,4 @@
 module Game.Components(
-  ServerEntity, ClientEntity,
-
   -- Client-only Components
   Camera(..),
   NetEntity(..),
@@ -28,19 +26,14 @@ import Data.Semigroup
 import Data.Monoid
 import Data.Text(Text)
 
-import Network.Login
+import Network.Types
+import Types
 
 import Codec.Serialise(Serialise)
 
 import GHC.Generics(Generic)
 
 import Linear
-
-type ServerEntity = Entity
-type ClientEntity = Entity
-
--- Client to Server ID map
-type ServerEntityId = Int
 
 -- | TEMPORARY: remove this at some point and replace it for a newtype instead.
 instance Serialise (V2 Float)

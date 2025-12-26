@@ -29,9 +29,10 @@ library
       Game.Components
       Game.Direction
       Game.Intent
-      Network.Login
+      Network.Apecs.Snapshot
       Network.Message
-      Network.Snapshot
+      Network.Types
+      Types
   other-modules:
       Paths_space_station15
   autogen-modules:
@@ -82,7 +83,6 @@ library
       ImportQualifiedPost
       GADTs
       ViewPatterns
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       JuicyPixels
     , OpenAL
@@ -181,7 +181,7 @@ executable space-station15-client
       ImportQualifiedPost
       GADTs
       ViewPatterns
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
     , OpenAL
@@ -276,7 +276,7 @@ executable space-station15-server
       ImportQualifiedPost
       GADTs
       ViewPatterns
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
     , OpenAL

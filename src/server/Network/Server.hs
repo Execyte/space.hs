@@ -7,8 +7,9 @@ import Control.Concurrent.STM.TVar
 import Control.Concurrent.Async
 
 import Network.Message
-import Network.Snapshot
+import Network.Types
 import Network.Server.NetStatus
+import Network.Apecs.Snapshot
 
 import Control.Concurrent
 import Control.Concurrent.STM.TVar
@@ -27,34 +28,32 @@ import Game.Components
 import Game.Server
 import Game.Server.World
 
-loginInfo :: Map.Map LoginName Text
-loginInfo = Map.fromList [(LoginName "test", "test")]
+loginInfo :: Map.Map LoginName Password
+loginInfo = Map.fromList [(LoginName "test", Password "test")]
 
-handleCall :: Server -> NetStatus -> LoginName -> Message -> IO (Maybe Message)
+handleCall :: Server -> NetStatus -> LoginName -> MessageFromClient -> IO (Maybe MessageFromServer)
 handleCall _ _ _ Ping = pure $ Just Pong
 handleCall _ _ _ _ = pure Nothing
 
-handleCast :: Server -> NetStatus -> LoginName -> Message -> IO ()
-handleCast server netstatus name (Action action) = do
+handleCast :: Server -> NetStatus -> LoginName -> MessageFromClient -> IO ()
+handleCast server netstatus name (ActionPacket action) = do
   players' <- readTVarIO netstatus.players
   case Map.lookup name players' of
     Just ent -> atomically $ writeTBQueue netstatus.actions (ent, action)
     Nothing -> pure ()
 handleCast _ _ _ _ = pure ()
 
-checkPass :: Text -> Text -> Bool
+checkPass :: Password -> Password -> Bool
 checkPass = (==)
 
-type Password = Text
-
-tryLogin :: Server -> NetStatus -> Connection -> LoginName -> Password -> IO (Maybe Message)
+tryLogin :: Server -> NetStatus -> Connection -> LoginName -> Password -> IO (Maybe MessageFromServer)
 tryLogin server netstatus conn name pass = do
   world <- readTVarIO server.world
   case Map.lookup name loginInfo of
     Just acctPass | checkPass acctPass pass -> do
       atomically $ modifyTVar' netstatus.logins \logins -> Map.insert (ConnectionId conn.connId) name logins
       ent <- tryMakeEntity world netstatus name
-      pure $ Just (LoginSuccess (unEntity ent))
+      pure $ Just (LoginStatusPacket $ LoginSuccess (unEntity ent))
     _ -> pure Nothing
   where
     tryMakeEntity world netstatus name = do
@@ -70,19 +69,19 @@ tryLogin server netstatus conn name pass = do
 registerPlayer :: World -> LoginName -> IO Entity
 registerPlayer world name = runWith world $ newEntity (Player name, Position 0 0)
 
-handleConnecting :: Server -> NetStatus -> Connection -> ClientMessage Message -> IO (Connection, Maybe (ServerMessage Message))
+handleConnecting :: Server -> NetStatus -> Connection -> ClientMessage MessageFromClient -> IO (Connection, Maybe (ServerMessage MessageFromServer))
 handleConnecting server netstatus conn (Call id (TryLogin name pass)) = do
   reply <- tryLogin server netstatus conn name pass
   case reply of
     Just x -> do
       pure (conn{connStatus = LoggedIn name}, (Reply id) <$> (Just x))
     Nothing -> do
-      atomically $ writeTBQueue conn.writeQueue (Reply id LoginFail)
+      atomically $ writeTBQueue conn.writeQueue (Reply id $ LoginStatusPacket LoginFail)
       error "disconnect"
       pure (conn, Nothing)
 handleConnecting _ _ conn _ = pure (conn, Nothing)
 
-handleMessage :: Server -> NetStatus -> Connection -> ClientMessage Message -> IO (Connection, Maybe (ServerMessage Message))
+handleMessage :: Server -> NetStatus -> Connection -> ClientMessage MessageFromClient -> IO (Connection, Maybe (ServerMessage MessageFromServer))
 handleMessage server netstatus conn@Connection{connStatus=(LoggedIn name)} (Call id msg') = do
   reply <- handleCall server netstatus name msg'
   pure (conn, (Reply id) <$> reply)

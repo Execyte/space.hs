@@ -9,9 +9,9 @@ module Network.Server.NetStatus(
 
 import Game.Intent(Intent)
 
-import Network.Snapshot
 import Network.Message
-import Network.Login
+import Network.Types
+import Network.Apecs.Snapshot
 
 import GHC.Weak(Weak)
 
@@ -36,7 +36,7 @@ data ConnectionStatus =
 
 -- | This is the definition of a connection.
 data Connection = Connection
-  { writeQueue :: TBQueue (ServerMessage Message) -- ^ The write queue contains data that needs to be sent to the client. This is where you would write server to client messages.
+  { writeQueue :: TBQueue (ServerMessage MessageFromServer) -- ^ The write queue contains data that needs to be sent to the client. This is where you would write server to client messages.
   , connId :: Int
   , connStatus :: ConnectionStatus
   }

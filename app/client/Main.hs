@@ -35,6 +35,7 @@ import Game.Client.World
 import Game.UI.ConnectMenu
 import Network.Message
 import Network.Client.ConnectionStatus
+
 import Game.Client.Renderer qualified as Renderer
 import Game.Client.Renderer (Renderer(..), Vertex(..))
 import Im qualified
@@ -62,7 +63,7 @@ action Client{connStatus} Quit = exitSuccess
 action Client{connStatus} x = do
   status <- readTVarIO connStatus
   case status of
-    Connected (_, _, event, _) -> event (Action x)
+    Connected (_, _, event, _) -> event (ActionPacket x)
     _ -> pure ()
 action _ _ = pure ()
 

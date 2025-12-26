@@ -8,7 +8,7 @@ import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TBQueue
 
 import Network.Message
-import Network.Snapshot
+import Network.Apecs.Snapshot
 import Network.Client.ConnectionStatus
 
 import Game
@@ -17,8 +17,8 @@ import Game.Client.World(withNetEntity)
 
 -- | Here is where you process random data that the server sends to you.
 -- The main cases here are component and world snapshots.
-processEvent :: Client -> Message -> IO ()
-processEvent client (ComponentSnapshotPacket id snapshot) =
+processEvent :: Client -> MessageFromServer -> IO ()
+processEvent client (EntitySnapshotPacket (EntitySnapshot id snapshot)) =
   (atomically $ tryReadTMVar client.world) >>= \case
     Just world -> runWith world $ withNetEntity id
       \ent ->

@@ -1,4 +1,4 @@
-module Game.Server.Simulation (World, System', initWorld, step, act, networkSystem) where
+module Game.Server.Simulation (World, System', initWorld, step, act, packWorld, sendUpdatesToClients) where
 
 import Apecs
 
@@ -14,11 +14,13 @@ import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar
 
 import Network.Message
-import Network.Snapshot
 import Network.Server
 import Network.Server.NetStatus
+import Network.Apecs.Snapshot
 
--- | The act function is where the player's intents will be processed.
+import Types
+
+-- | The act function is where the player's intents are processed.
 act :: Entity -> Intent -> System' ()
 act ent (Move DOWN) = modify ent \(Position x y) -> (Position x (y - 1), Dirty)
 act ent (Move UP) = modify ent \(Position x y) -> (Position x (y + 1), Dirty)
@@ -35,9 +37,8 @@ packSnapshot ent = do
   newPos <- get ent :: System' (Maybe Position)
   pure $ ComponentSnapshot{pos = newPos}
 
--- | This is what handles sending component updates to the player.
-networkSystem :: NetStatus -> System' ()
-networkSystem netstatus = do
+sendUpdatesToClients :: NetStatus -> System' ()
+sendUpdatesToClients netstatus = do
   dirties <- collect \(Dirty, Entity entId) -> Just (Entity entId, entId)
   forM_ dirties \(ent, entId) -> do
     snapshots <- lift $ readTVarIO netstatus.snapshots
@@ -49,7 +50,8 @@ networkSystem netstatus = do
       Just oldSnapshot | snapshot == oldSnapshot -> pure ()
       _ -> lift do
           conns <- readTVarIO netstatus.conns
-          forM_ conns \(_, Connection{writeQueue}) -> atomically $ writeTBQueue writeQueue (Event $ ComponentSnapshotPacket entId snapshot)
+          forM_ conns \(_, Connection{writeQueue}) -> atomically $ writeTBQueue writeQueue (Event $ EntitySnapshotPacket $ EntitySnapshot (ServerEntityId entId) snapshot)
           atomically $ modifyTVar' netstatus.snapshots (IntMap.insert entId snapshot)
 
-
+-- | the world is packaged and sent to the client as a list of component snapshots.
+packWorld = undefined

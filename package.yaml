@@ -59,16 +59,7 @@ library:
   - assets
   - src/shared
 
-ghc-options:
-- -Wall
-- -Wcompat
-- -Widentities
-- -Wincomplete-record-updates
-- -Wincomplete-uni-patterns
-- -Wmissing-export-lists
-- -Wmissing-home-modules
-- -Wpartial-fields
-- -Wredundant-constraints
+ghc-options: []
 
 default-extensions:
 - TypeFamilies
@@ -126,7 +117,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - space-station15
-
   space-station15-server:
     main: Main.hs
     source-dirs:

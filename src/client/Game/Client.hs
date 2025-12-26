@@ -21,7 +21,7 @@ import Graphics.Rendering.OpenGL qualified as GL
 -- | The client datatype. This stores pretty much everything relevant to the client, especially the world and connection status.
 data Client = Client
   { world :: TMVar World
-  , connStatus :: TVar (ConnectionStatus Message Message)
+  , connStatus :: TVar (ConnectionStatus MessageFromClient MessageFromServer)
   , renderer :: Renderer
   }
 
