@@ -16,26 +16,18 @@ import Game
 import Game.Client
 import Game.Client.World
 
+import Data.Foldable(traverse_)
+
 processEntitySnapshot :: EntitySnapshot -> System' ()
 processEntitySnapshot (EntitySnapshot id snapshot) = do
-  ent <- getNetEntity id >>= \case
-           Just ent -> pure ent
-           Nothing -> newEntity (NetEntity id)
-  case snapshot.pos of
-    Just (MkPosition pos') -> set ent $ MkPosition pos'
-    Nothing -> pure ()
+  ent <- getNetEntity id >>= (maybe (newEntity (NetEntity id)) $ pure)
+  set ent (snapshot.pos)
 
 -- | Here is where you process random data that the server sends to you.
+processEvent' :: Client -> MessageFromServer -> World -> IO ()
+processEvent' client (EntitySnapshotPacket entSnapshot) = runSystem $ processEntitySnapshot entSnapshot
+processEvent' client (WorldSnapshotPacket (WorldSnapshot xs)) = runSystem $ sequence_ $ map processEntitySnapshot xs
+
 processEvent :: Client -> MessageFromServer -> IO ()
-processEvent client (EntitySnapshotPacket entSnapshot) =
-  (atomically $ tryReadTMVar client.world) >>= \case
-    Just world -> runWith world $ processEntitySnapshot entSnapshot
-    Nothing -> pure ()
-processEvent client (WorldSnapshotPacket (WorldSnapshot xs)) =
-  (atomically $ tryReadTMVar client.world) >>= \case
-    Just world -> runWith world $ sequence_ $ map processEntitySnapshot xs
-    Nothing -> pure ()
-processEvent _ n = do
-  putStrLn $ "Seen " <> show n
-  pure ()
+processEvent client evt = (atomically $ tryReadTMVar client.world) >>= maybe (pure ()) (processEvent' client evt)
 

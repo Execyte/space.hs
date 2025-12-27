@@ -61,12 +61,9 @@ indices = Vector.fromList [0, 1, 2, 1, 2, 3]
 
 action :: Client -> Intent -> IO ()
 action Client{connStatus} Quit = exitSuccess
-action Client{connStatus} x = do
-  status <- readTVarIO connStatus
-  case status of
-    Connected (_, _, event, _) -> event (ActionPacket x)
-    _ -> pure ()
-action _ _ = pure ()
+action Client{connStatus} x = readTVarIO connStatus >>= \case
+  Connected (_, _, event, _) -> event (ActionPacket x)
+  _ -> pure ()
 
 intentFromKey :: SDL.KeyboardEventData -> Maybe Intent
 intentFromKey (SDL.KeyboardEventData _ SDL.Released _ _) = Nothing
@@ -115,8 +112,9 @@ renderGame world renderer = do
 
   ((/ 1000) . fromIntegral -> seconds) <- SDL.ticks
   (V2 (fromIntegral -> w) (fromIntegral -> h)) <- get $ SDL.windowSize renderer.rendererWindow
+  pure ()
 
-  let
+  {-  let
     x = cos (seconds * 3) * 3
     y = sin (seconds * 3) * 3
     w' = w / 32
@@ -126,7 +124,7 @@ renderGame world renderer = do
     x' = cx - x
     y' = cy - y
 
-  Renderer.draw renderer "tile" (V2 x' y') (V2 1 1)
+  Renderer.draw renderer "tile" (V2 x' y') (V2 1 1)-}
 
 loop :: Client -> IO () -> IO ()
 loop client@Client{world, renderer} buildUI = forever do

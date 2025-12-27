@@ -29,14 +29,13 @@ import Game.Server
 import Game.Server.World
 
 loginInfo :: Map.Map LoginName Password
-loginInfo = Map.fromList [(LoginName "test", Password "test"), (LoginName "test2", Password "test2")]
+loginInfo = Map.fromList $ map (\(name, pass) -> (LoginName name, Password pass))
+  [("test", "test"), ("test2", "test2")]
 
+-- TODO: download the map too
 handleCall :: Server -> NetStatus -> LoginName -> MessageFromClient -> IO (Maybe MessageFromServer)
+handleCall server _ _ RequestWorldSnapshot = readTVarIO server.world >>= (runSystem $ (Just . WorldSnapshotPacket) <$> packWorld)
 handleCall _ _ _ Ping = pure $ Just Pong
-handleCall server _ _ RequestWorldSnapshot =
-  (atomically $ readTVar server.world) >>= \world' -> runWith world' do
-    worldSnapshot <- packWorld
-    lift $ pure $ Just $ WorldSnapshotPacket worldSnapshot
 handleCall _ _ _ _ = pure Nothing
 
 handleCast :: Server -> NetStatus -> LoginName -> MessageFromClient -> IO ()
@@ -57,7 +56,7 @@ tryLogin server netstatus conn name pass = do
     Just acctPass | checkPass acctPass pass -> do
       atomically $ modifyTVar' netstatus.logins \logins -> Map.insert (ConnectionId conn.connId) name logins
       ent <- tryMakeEntity world netstatus name
-      pure $ Just (LoginStatusPacket $ LoginSuccess (unEntity ent))
+      (pure . Just . LoginStatusPacket) $ LoginSuccess $ unEntity ent
     _ -> pure Nothing
   where
     tryMakeEntity world netstatus name = do
@@ -66,29 +65,24 @@ tryLogin server netstatus conn name pass = do
         Nothing -> do
           ent <- registerPlayer world name
           atomically $ modifyTVar' netstatus.players \players -> Map.insert name ent players
-          pure $ ent
-        Just ent ->
-          pure $ ent
+          pure ent
+        Just ent -> pure ent
 
 registerPlayer :: World -> LoginName -> IO Entity
-registerPlayer world name = runWith world $ newEntity (Player name, Position 0 0)
+registerPlayer world name = runWith world $ newEntity (Player name, Position 0 0, Dirty)
 
 handleConnecting :: Server -> NetStatus -> Connection -> ClientMessage MessageFromClient -> IO (Connection, Maybe (ServerMessage MessageFromServer))
-handleConnecting server netstatus conn (Call id (TryLogin name pass)) = do
-  reply <- tryLogin server netstatus conn name pass
-  case reply of
-    Just x -> do
-      pure (conn{connStatus = LoggedIn name}, (Reply id) <$> (Just x))
+handleConnecting server netstatus conn (Call id (TryLogin name pass)) =
+  tryLogin server netstatus conn name pass >>= \case
+    Just reply -> pure (conn{connStatus = LoggedIn name}, (Just . Reply id) reply)
     Nothing -> do
-      atomically $ writeTBQueue conn.writeQueue (Reply id $ LoginStatusPacket $ LoginFail "username or password is incorrect")
+      atomically $ writeTBQueue conn.writeQueue $ Reply id . LoginStatusPacket $ LoginFail "username or password is incorrect"
       error "disconnect"
       pure (conn, Nothing)
 handleConnecting _ _ conn _ = pure (conn, Nothing)
 
 handleMessage :: Server -> NetStatus -> Connection -> ClientMessage MessageFromClient -> IO (Connection, Maybe (ServerMessage MessageFromServer))
-handleMessage server netstatus conn@Connection{connStatus=(LoggedIn name)} (Call id msg') = do
-  reply <- handleCall server netstatus name msg'
-  pure (conn, (Reply id) <$> reply)
+handleMessage server netstatus conn@Connection{connStatus=(LoggedIn name)} (Call id msg') = (conn,) . (Reply id <$>) <$> (handleCall server netstatus name msg')
 handleMessage server netstatus conn@Connection{connStatus=(LoggedIn name)} (Cast msg') = do
   handleCast server netstatus name msg'
   pure (conn, Nothing)

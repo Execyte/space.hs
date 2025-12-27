@@ -20,7 +20,7 @@ import Network.Apecs.Snapshot
 
 import Types
 
--- | The act function is where the player's intents are processed.
+-- | Process the player's actions.
 act :: Entity -> Intent -> System' ()
 act ent (Move UP) = modify ent \(Position x y) -> (Position x (y - 1), Dirty)
 act ent (Move DOWN) = modify ent \(Position x y) -> (Position x (y + 1), Dirty)
@@ -41,9 +41,10 @@ sendUpdatesToClients netstatus = do
     modify ent \Dirty -> Not @Dirty
     snapshot <- packSnapshot ent
 
+    -- TODO: replace with stm-containers 
     case IntMap.lookup entId snapshots of
       Just oldSnapshot | snapshot == oldSnapshot -> pure ()
       _ -> lift do
           conns <- readTVarIO netstatus.conns
-          forM_ conns \(_, Connection{writeQueue}) -> atomically $ writeTBQueue writeQueue (Event $ EntitySnapshotPacket $ EntitySnapshot (ServerEntityId entId) snapshot)
-          atomically $ modifyTVar' netstatus.snapshots (IntMap.insert entId snapshot)
+          forM_ conns \(_, Connection{writeQueue}) -> atomically $ writeTBQueue writeQueue $ Event . EntitySnapshotPacket $ EntitySnapshot (ServerEntityId entId) snapshot
+          atomically $ modifyTVar' netstatus.snapshots $ IntMap.insert entId snapshot
