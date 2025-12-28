@@ -16,8 +16,6 @@ import Game
 import Game.Client
 import Game.Client.World
 
-import Data.Foldable(traverse_)
-
 processEntitySnapshot :: EntitySnapshot -> System' ()
 processEntitySnapshot (EntitySnapshot id snapshot) = do
   ent <- getNetEntity id >>= (maybe (newEntity (NetEntity id)) $ pure)

@@ -28,25 +28,10 @@ import Game.Server.World
 -- TODO: fix memory leak relating to connected users not being removed after a certain time of not pinging
 main :: IO ()
 main = do
-  players <- newTVarIO Map.empty
-  logins <- newTVarIO Map.empty
-  conns <- newTVarIO mempty
-  snapshots <- newTVarIO IntMap.empty
-  actions <- newTBQueueIO 32
   connIds <- newIORef 0
 
-  world' <- initWorld
-  world <- newTVarIO world'
-  
-  let 
-      server = Server { world = world }
-      netstatus = NetStatus {
-        logins = logins
-      , players = players
-      , actions = actions
-      , conns = conns
-      , snapshots = snapshots
-      }
+  server <- newServer
+  netstatus <- newNetStatus
 
   let
     handler conn msg =
@@ -65,11 +50,11 @@ main = do
       atomically $ modifyTVar' conns $ IntMap.delete conn.connId
 
   void $ forkIO $ forever do
-    world' <- readTVarIO world
-    (ent, action) <- atomically $ readTBQueue actions
+    world' <- readTVarIO server.world
+    (ent, action) <- atomically $ readTBQueue netstatus.actions
     Apecs.runWith world' $ do
       act ent action
       step (1/60)
       sendUpdatesToClients netstatus
 
-  QUIC.runServerStateful "127.0.0.1" 2525 (setup conns connIds) (teardown conns) handler
+  QUIC.runServerStateful "127.0.0.1" 2525 (setup netstatus.conns connIds) (teardown netstatus.conns) handler

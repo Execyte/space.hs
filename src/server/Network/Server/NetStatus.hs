@@ -5,7 +5,10 @@ module Network.Server.NetStatus(
   ConnectionStatus(..),
   Connection(..),
 
-  NetStatus(..)) where
+  NetStatus(..),
+
+  mkNetStatus,
+  newNetStatus) where
 
 import Game.Intent(Intent)
 
@@ -14,15 +17,18 @@ import Network.Types
 import Network.Apecs.Snapshot
 
 import GHC.Weak(Weak)
+import GHC.Num.Natural(Natural)
 
 import Control.Concurrent
+import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TBQueue
 
 import Data.Text(Text)
 import Data.Map.Strict(Map)
+import Data.Map.Strict qualified as Map
 import Data.IntMap.Strict(IntMap)
-import Data.HashMap.Strict(HashMap)
+import Data.IntMap.Strict qualified as IntMap
 import Apecs(Entity)
 
 newtype ConnectionId = ConnectionId Int deriving (Show, Eq, Ord)
@@ -49,3 +55,9 @@ data NetStatus = NetStatus
   , actions :: TBQueue (Entity, Intent) -- ^ A queue that contains actions of the player.
   , snapshots :: TVar (IntMap ComponentSnapshot) -- ^ A hashmap that contains last snapshots of every networked entity.
   }
+
+newNetStatus :: IO NetStatus
+newNetStatus = atomically $ mkNetStatus Map.empty Map.empty mempty 32 IntMap.empty
+
+mkNetStatus :: Map LoginName Entity -> Map ConnectionId LoginName -> IntMap (Weak ThreadId, Connection) -> Natural -> IntMap ComponentSnapshot -> STM NetStatus
+mkNetStatus players logins conns actions snapshots = NetStatus <$> newTVar players <*> newTVar logins <*> newTVar conns <*> newTBQueue actions <*> newTVar snapshots
