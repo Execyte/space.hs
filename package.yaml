@@ -1,10 +1,10 @@
-name:                space-station15
+name:                space-hs
 version:             0.1.0.0
-github:              "Execyte/space-station15"
+github:              "Execyte/space.hs"
 license:             BSD-3-Clause
-author:              "Execyte"
+author:              "Execute, Hexatorum"
 maintainer:          "execute@erisws.com"
-copyright:           "2025 Execyte"
+copyright:           "2025 Execute, Hexatorum"
 
 extra-source-files:
 - README.md
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/Execyte/space-station15#readme>
+description:         Please see the README on GitHub at <https://github.com/Execyte/space.hs#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -106,7 +106,7 @@ default-extensions:
 - ViewPatterns
 
 executables:
-  space-station15-client:
+  space-hs-client:
     main: Main.hs
     source-dirs:
     - app/client
@@ -116,8 +116,8 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - space-station15
-  space-station15-server:
+    - space-hs
+  space-hs-server:
     main: Main.hs
     source-dirs:
     - app/server
@@ -127,4 +127,4 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - space-station15
+    - space-hs

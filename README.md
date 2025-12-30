@@ -28,7 +28,7 @@ Space.hs is a round-based game about surviving and maintaing a space station amo
     stack build
     ```
     
-    This will produce two executables: `space-station15-client` and `space-station15-server`. Run them with the command:
+    This will produce two executables: `space-hs-client` and `space-hs-server`. Run them with the command:
 
     ```
     stack exec [executable name]
@@ -45,7 +45,7 @@ macOS building works similarly to Linux, please refer to stack docs for further 
     stack build
     ```
     
-    This will produce two executables: `space-station15-client` and `space-station15-server`. Run them with the command:
+    This will produce two executables: `space-hs-client` and `space-hs-server`. Run them with the command:
 
     ```
     stack exec [executable name]

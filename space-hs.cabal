@@ -4,14 +4,14 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 
-name:           space-station15
+name:           space-hs
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/Execyte/space-station15#readme>
-homepage:       https://github.com/Execyte/space-station15#readme
-bug-reports:    https://github.com/Execyte/space-station15/issues
-author:         Execyte
+description:    Please see the README on GitHub at <https://github.com/Execyte/space.hs#readme>
+homepage:       https://github.com/Execyte/space.hs#readme
+bug-reports:    https://github.com/Execyte/space.hs/issues
+author:         Execute, Hexatorum
 maintainer:     execute@erisws.com
-copyright:      2025 Execyte
+copyright:      2025 Execute, Hexatorum
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/Execyte/space-station15
+  location: https://github.com/Execyte/space.hs
 
 library
   exposed-modules:
@@ -34,9 +34,9 @@ library
       Network.Types
       Types
   other-modules:
-      Paths_space_station15
+      Paths_space_hs
   autogen-modules:
-      Paths_space_station15
+      Paths_space_hs
   hs-source-dirs:
       assets
       src/shared
@@ -119,7 +119,7 @@ library
     , x509
   default-language: Haskell2010
 
-executable space-station15-client
+executable space-hs-client
   main-is: Main.hs
   other-modules:
       Game.Client
@@ -132,9 +132,9 @@ executable space-station15-client
       Network.Client
       Network.Client.ConnectionStatus
       Network.Client.Manager
-      Paths_space_station15
+      Paths_space_hs
   autogen-modules:
-      Paths_space_station15
+      Paths_space_hs
   hs-source-dirs:
       app/client
       src/client
@@ -209,7 +209,7 @@ executable space-station15-client
     , random
     , sdl2
     , serialise
-    , space-station15
+    , space-hs
     , stm
     , text
     , tls
@@ -219,7 +219,7 @@ executable space-station15-client
     , x509
   default-language: Haskell2010
 
-executable space-station15-server
+executable space-hs-server
   main-is: Main.hs
   other-modules:
       Game.Server
@@ -227,9 +227,9 @@ executable space-station15-server
       Game.Server.World
       Network.Server
       Network.Server.NetStatus
-      Paths_space_station15
+      Paths_space_hs
   autogen-modules:
-      Paths_space_station15
+      Paths_space_hs
   hs-source-dirs:
       app/server
       src/server
@@ -304,7 +304,7 @@ executable space-station15-server
     , random
     , sdl2
     , serialise
-    , space-station15
+    , space-hs
     , stm
     , text
     , tls
