@@ -1,4 +1,4 @@
-# Changelog for `space-station15`
+# Changelog for `space-hs`
 
 All notable changes to this project will be documented in this file.
 

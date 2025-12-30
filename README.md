@@ -1,6 +1,6 @@
-<!--<p align="center"> <img alt="Space Station 15" width="880" height="300" src="https://raw.githubusercontent.com/Execyte/asset-dump/refs/heads/main/svg/SS15longBGP.svg"/></p>-->
+<!--<p align="center"> <img alt="Space.hs" width="880" height="300" src="https://raw.githubusercontent.com/Techgineers7725/asset-dump/refs/heads/main/svg/Space-hs-banner.svg"/></p>-->
 
-[![Join our Discord server](https://img.shields.io/badge/join_our-Discord_server-5865F2?logo=discord&logoColor=white)](https://discord.gg/qW8bHkncrb) [![Powered by Haskell](https://img.shields.io/badge/powered_by-Haskell-5D4F85?logo=haskell&logoColor=white)](https://haskell.org)
+[![Join our Discord server](https://img.shields.io/badge/join_our-Discord_server-5865F2?logo=discord&logoColor=white)](https://discord.gg/pPUXAZMMYN) [![Powered by Haskell](https://img.shields.io/badge/powered_by-Haskell-5D4F85?logo=haskell&logoColor=white)](https://haskell.org)
 
 Space.hs is a round-based game about surviving and maintaing a space station amongst many kinds of threats.
 

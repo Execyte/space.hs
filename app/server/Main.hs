@@ -15,6 +15,7 @@ import Data.Text(Text, unpack, pack)
 import Data.IntMap.Strict qualified as IntMap
 import Data.Map.Strict qualified as Map
 import Data.Maybe
+import Data.Foldable(for_)
 import Data.IORef (newIORef, atomicModifyIORef')
 
 import Codec.Serialise(Serialise)
@@ -51,9 +52,9 @@ main = do
 
   void $ forkIO $ forever do
     world' <- readTVarIO server.world
-    (ent, action) <- atomically $ readTBQueue netstatus.actions
+    mAction <- atomically $ tryReadTBQueue netstatus.actions
     Apecs.runWith world' $ do
-      act ent action
+      for_ mAction \(ent, action) -> act ent action
       step (1/60)
       sendUpdatesToClients netstatus
 
