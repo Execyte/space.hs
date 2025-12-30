@@ -5,12 +5,14 @@ import Game.Components
 import Network.Apecs.Snapshot
 import Types
 
-makeWorld "World" [''Player, ''Position, ''Dirty]
+makeWorld "World" [''Player, ''Position, ''Facing, ''Dirty]
 
 type System' a = System World a
 
 packSnapshot :: Entity -> System' ComponentSnapshot
-packSnapshot ent = ComponentSnapshot <$> (get ent :: System' (Maybe Position))
+packSnapshot ent = ComponentSnapshot
+  <$> (get ent :: System' (Maybe Position))
+  <*> (get ent :: System' (Maybe Facing))
 
 packWorld :: System' WorldSnapshot
 packWorld = do

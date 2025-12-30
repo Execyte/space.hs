@@ -69,7 +69,7 @@ tryLogin server netstatus conn name pass = do
         Just ent -> pure ent
 
 registerPlayer :: World -> LoginName -> IO Entity
-registerPlayer world name = runWith world $ newEntity (Player name, Position 0 0, Dirty)
+registerPlayer world name = runWith world $ newEntity (Player name, Position 0 0, Facing Down, Dirty)
 
 handleConnecting :: Server -> NetStatus -> Connection -> ClientMessage MessageFromClient -> IO (Connection, Maybe (ServerMessage MessageFromServer))
 handleConnecting server netstatus conn (Call id (TryLogin name pass)) =

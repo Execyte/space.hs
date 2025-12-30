@@ -5,7 +5,7 @@ import Apecs.Experimental.Reactive
 import Game.Components
 import Types
 
-makeWorld "World" [''Camera, ''Me, ''Position, ''NetEntity]
+makeWorld "World" [''Camera, ''Me, ''Position, ''Facing, ''NetEntity]
 
 type System' a = System World a
 
