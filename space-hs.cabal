@@ -90,6 +90,7 @@ library
     , StateVar
     , aeson
     , apecs
+    , array
     , async
     , atlas
     , base >=4.7 && <5
@@ -125,6 +126,7 @@ executable space-hs-client
       Game.Client
       Game.Client.Renderer
       Game.Client.Renderer.Shader
+      Game.Client.Renderer.Spritesheet
       Game.Client.Renderer.Vertex
       Game.Client.World
       Game.UI.ConnectMenu
@@ -189,6 +191,7 @@ executable space-hs-client
     , StateVar
     , aeson
     , apecs
+    , array
     , async
     , atlas
     , base >=4.7 && <5
@@ -284,6 +287,7 @@ executable space-hs-server
     , StateVar
     , aeson
     , apecs
+    , array
     , async
     , atlas
     , base >=4.7 && <5
