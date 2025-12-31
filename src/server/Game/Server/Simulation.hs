@@ -34,17 +34,10 @@ step dT = pure ()
 
 sendUpdatesToClients :: NetStatus -> System' ()
 sendUpdatesToClients netstatus = do
-  dirties <- collect \(Dirty, Entity entId) -> Just (Entity entId, entId)
-  forM_ dirties \(ent, entId) -> do
-    snapshots <- lift $ readTVarIO netstatus.snapshots
-
+  dirties <- collect \(Dirty, ent@(Entity entId)) -> Just $ (ent, EntitySnapshot (ServerEntityId entId))
+  forM_ dirties \(ent, entitySnapshot) -> do
+    componentSnapshot <- packComponentSnapshotFor ent
     modify ent \Dirty -> Not @Dirty
-    snapshot <- packSnapshot ent
-
-    -- TODO: replace with stm-containers 
-    case IntMap.lookup entId snapshots of
-      Just oldSnapshot | snapshot == oldSnapshot -> pure ()
-      _ -> lift do
-          conns <- readTVarIO netstatus.conns
-          forM_ conns \(_, Connection{writeQueue}) -> atomically $ writeTBQueue writeQueue $ Event . EntitySnapshotPacket $ EntitySnapshot (ServerEntityId entId) snapshot
-          atomically $ modifyTVar' netstatus.snapshots $ IntMap.insert entId snapshot
+    lift do
+      conns <- readTVarIO netstatus.conns
+      forM_ conns \(_, Connection{writeQueue}) -> atomically $ writeTBQueue writeQueue $ Event . EntitySnapshotPacket $ entitySnapshot componentSnapshot

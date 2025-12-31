@@ -52,7 +52,6 @@ instance Component Camera where
   type Storage Camera = Global Camera
 instance Semigroup Camera where (MkCamera p1) <> (MkCamera p2) = MkCamera $ (p1 ^+^ p2)
 instance Monoid Camera where mempty = MkCamera $ V2 0 0
-
 pattern Camera x y = MkCamera (V2 x y)
 
 -- | This is a mapping between server and client entity IDs.

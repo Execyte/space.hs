@@ -58,4 +58,4 @@ main = do
       step (1/60)
       sendUpdatesToClients netstatus
 
-  QUIC.runServerStateful "127.0.0.1" 2525 (setup netstatus.conns connIds) (teardown netstatus.conns) handler
+  QUIC.runServerStateful "127.0.0.1" 57355 (setup netstatus.conns connIds) (teardown netstatus.conns) handler

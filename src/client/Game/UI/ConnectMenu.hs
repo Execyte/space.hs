@@ -106,7 +106,7 @@ drawConnectMenu client ConnectMenu{server_ip, username, password} = do
                       error "disconnected"
 
               tryStartClient hostname port f = do
-                void $ forkIO $ timeout 5000000 (startClient hostname "2525") >>= \case
+                void $ forkIO $ timeout 5000000 (startClient hostname port) >>= \case
                   Just (stop, call, cast, pollEvent) -> f $ Connected (stop, call, cast, pollEvent)
                   Nothing -> f $ Disconnected "no response from server"
                   
@@ -118,7 +118,7 @@ drawConnectMenu client ConnectMenu{server_ip, username, password} = do
                 hostname <- readTVarIO server_ip
                 name <- readTVarIO username
                 pass <- readTVarIO password
-                tryStartClient (unpack hostname) "2525" \case
+                tryStartClient (unpack hostname) "57355" \case
                   Connected (stop_, call, cast, pollEvent) -> do
                     let
                       stop = do

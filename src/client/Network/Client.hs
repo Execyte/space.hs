@@ -19,8 +19,7 @@ import Game.Client.World
 processEntitySnapshot :: EntitySnapshot -> System' ()
 processEntitySnapshot (EntitySnapshot id snapshot) = do
   ent <- getNetEntity id >>= (maybe (newEntity (NetEntity id)) $ pure)
-  set ent snapshot.pos
-  set ent snapshot.facing
+  set ent (snapshot.pos, snapshot.facing)
 
 -- | Here is where you process random data that the server sends to you.
 processEvent' :: Client -> MessageFromServer -> World -> IO ()
