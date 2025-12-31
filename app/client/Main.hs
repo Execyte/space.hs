@@ -94,17 +94,16 @@ handleWindowEvents renderer = mapM_ (handle . SDL.eventPayload)
       in Renderer.updateViewport renderer w h
     handle _ = pure ()
 
+-- TODO: this is so ass, please improve this i hate it so much
 drawTiles :: Renderer -> [[Tile]] -> IO ()
 drawTiles renderer =
   foldM_ (\y row -> do
     foldM_ (\x tile -> do
-      when (tile > 0) $ Renderer.draw renderer "tile" (V2 x y) (V2 1 1)
+      when (tile > 0) $ Renderer.drawTexture renderer "tile" (V2 x y) (V2 1 1)
       pure $ succ x
       ) 0 row
     pure $ succ y
     ) 0
--- drawTiles _ _ = pure () -- we kinda broke it now because of the TEXTURE UPDATE™, so right now we
---                         -- don't run it so that it doesn't freak out and combust
 
 renderGame :: World -> Renderer -> IO ()
 renderGame world renderer = do
@@ -268,7 +267,9 @@ main = do
   -- Renderer.setUniform shader "u_texture" (GL.TextureUnit 0)
 
   -- please don't make me do this haskell
-  renderer'' <- Renderer.loadTexture renderer' "tile" "assets/tile.png"
+  renderer'' <- Renderer.loadTexture renderer' "tile" "assets/tile.png" Nothing
+  -- no
+  renderer''' <- Renderer.loadTexture renderer'' "human" "assets/human.png" $ Just "assets/human.json"
 
   model <- Renderer.m44ToGL $ identity * V4 32 32 1 1
   Renderer.setUniform shader "u_model" model
@@ -276,9 +277,9 @@ main = do
   Renderer.setUniform @Word32 shader "u_atlas_size" Renderer.atlasSize
 
   let
-    vertexBuffer = renderer''.rendererVertexBuffer
-    elementBuffer = renderer''.rendererElementBuffer
-    vertexArray = renderer''.rendererVertexArray
+    vertexBuffer = renderer'''.rendererVertexBuffer
+    elementBuffer = renderer'''.rendererElementBuffer
+    vertexArray = renderer'''.rendererVertexArray
 
   GL.bindVertexArrayObject $= Just vertexArray
 
@@ -306,7 +307,7 @@ main = do
 
   GL.bindVertexArrayObject $= Nothing
 
-  Renderer.updateViewport renderer'' 800 600
+  Renderer.updateViewport renderer''' 800 600
 
   worldTMVar <- newEmptyTMVarIO
   connInfo <- newTVarIO $ Disconnected ""
@@ -314,7 +315,7 @@ main = do
   let client = Client {
     world = worldTMVar,
     connStatus = connInfo,
-    renderer = renderer''
+    renderer = renderer'''
   }
 
   connectMenu <- atomically $ newConnectMenu

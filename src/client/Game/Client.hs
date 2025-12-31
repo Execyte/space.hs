@@ -39,7 +39,8 @@ step dT = pure ()
 
 -- | Draw the world to the screen.
 draw :: Renderer -> System' ()
-draw renderer = cmapM_ \(Position x y) -> lift $ Renderer.draw renderer "tile" (V2 x y) (V2 1 1)
+draw renderer = cmapM_ \(Position x y, Facing d) -> lift $
+  Renderer.drawSprite renderer "human" (fromEnum d) (V2 x y) (V2 1 1)
 
 -- | Main function to set globals and other things when the world needs to be initialized.
 initialise :: System' ()

@@ -7,6 +7,7 @@ module Game.Components(
   -- Shared components
   Player(..),
   Position(..),
+  Facing(..),
 
   -- Server-only components
   Dirty(..),
@@ -34,6 +35,8 @@ import Codec.Serialise(Serialise)
 import GHC.Generics(Generic)
 
 import Linear
+
+import Game.Direction
 
 -- | TEMPORARY: remove this at some point and replace it for a newtype instead.
 instance Serialise (V2 Float)
@@ -73,8 +76,15 @@ newtype Position = MkPosition (V2 Float)
 instance Component Position where
   type Storage Position = Map Position
 instance Serialise Position
-
 pattern Position x y = MkPosition (V2 x y)
+
+-- | This is used for entities that can face in multiple directions.
+newtype Facing = Facing Direction
+  deriving (Show, Eq)
+  deriving Generic
+instance Component Facing where
+  type Storage Facing = Map Facing
+instance Serialise Facing
 
 -- | This is used to mark an entity that it's components have changed and need to be reconciled to the clients. You should, for the most part, always add this if you want the clients to see the changes.
 data Dirty = Dirty deriving Show

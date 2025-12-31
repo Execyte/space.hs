@@ -7,7 +7,9 @@ import Types
 import Apecs
 
 data ComponentSnapshot = ComponentSnapshot
-  { pos :: Maybe Position } deriving (Show, Eq, Generic)
+  { pos :: Maybe Position
+  , facing :: Maybe Facing
+  } deriving (Show, Eq, Generic)
 
 data EntitySnapshot = EntitySnapshot ServerEntityId ComponentSnapshot
   deriving (Show, Generic)

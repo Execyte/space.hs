@@ -22,10 +22,10 @@ import Types
 
 -- | Process the player's actions.
 act :: Entity -> Intent -> System' ()
-act ent (Move UP) = modify ent \(Position x y) -> (Position x (y - 1), Dirty)
-act ent (Move DOWN) = modify ent \(Position x y) -> (Position x (y + 1), Dirty)
-act ent (Move LEFT) = modify ent \(Position x y) -> (Position (x - 1) y, Dirty)
-act ent (Move RIGHT) = modify ent \(Position x y) -> (Position (x + 1) y, Dirty)
+act ent (Move UP) = modify ent \(Position x y, Facing _) -> (Position x (y - 1), Facing UP, Dirty)
+act ent (Move DOWN) = modify ent \(Position x y, Facing _) -> (Position x (y + 1), Facing DOWN, Dirty)
+act ent (Move LEFT) = modify ent \(Position x y, Facing _) -> (Position (x - 1) y, Facing LEFT, Dirty)
+act ent (Move RIGHT) = modify ent \(Position x y, Facing _) -> (Position (x + 1) y, Facing RIGHT, Dirty)
 act _ _ = pure ()
 
 -- | Step the world once.

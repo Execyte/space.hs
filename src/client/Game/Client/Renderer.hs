@@ -13,26 +13,40 @@ module Game.Client.Renderer (
   atlasSize,
 
   loadTexture,
+  loadSpritesheet,
+  
   getTexture,
-
-  draw,
+  getSpritesheet,
+  
+  drawTexture,
+  drawSprite,
 
   updateViewport,
   m44ToGL,
   loadImage,
 
   module Game.Client.Renderer.Shader,
-  module Game.Client.Renderer.Vertex
+  module Game.Client.Renderer.Vertex,
+  module Game.Client.Renderer.Spritesheet
 ) where
 
 import Data.Int
 import Data.Word
+import Data.ByteString.Lazy (ByteString)
+import Data.ByteString.Lazy qualified as ByteString
+import Data.Text (Text)
+import Data.Text qualified as Text
+import Data.Aeson
 import Data.Foldable (foldlM)
+import Data.Vector ((!?))
 import Control.Monad.Primitive
 import System.Exit
 import System.IO
+import Data.Vector.Storable (Vector)
+import Data.Vector.Storable qualified as Vector
 import Foreign
 
+import Control.Lens
 import Data.HashMap.Strict (HashMap)
 import Data.HashMap.Strict qualified as HashMap
 import Linear
@@ -41,10 +55,10 @@ import Data.Atlas
 import Data.StateVar
 import Graphics.Rendering.OpenGL.GL qualified as GL
 import SDL qualified
-import Data.Vector.Storable qualified as Vector
 
 import Game.Client.Renderer.Shader
 import Game.Client.Renderer.Vertex
+import Game.Client.Renderer.Spritesheet
 
 -- TODO: we shouldn't need access to the constructor and fields, make rendering possible without
 -- having to access those
@@ -56,7 +70,8 @@ data Renderer = Renderer
   , rendererVertexArray :: GL.VertexArrayObject
   , rendererAtlas :: Atlas (PrimState IO)
   , rendererAtlasTexture :: GL.TextureObject
-  , rendererTextures :: HashMap String (GL.TextureObject, V4 Int)
+  , rendererTextures :: HashMap Text (GL.TextureObject, V4 Int)
+  , rendererSprites :: HashMap Text Spritesheet
   }
 
 atlasSize :: Integral a => a
@@ -99,19 +114,20 @@ newRenderer window = do
     , rendererAtlas = atlas
     , rendererAtlasTexture = texture
     , rendererTextures = HashMap.empty
+    , rendererSprites = HashMap.empty
     }
 
-loadTexture :: Renderer -> String -> FilePath -> IO Renderer
+loadTexture :: Renderer -> Text -> FilePath -> Maybe FilePath -> IO Renderer
 loadTexture renderer@Renderer{
     rendererAtlas = atlas
   , rendererAtlasTexture = texture
   , rendererTextures = textures
-  } name file = do
+  } name textureFile maybeSpritesheetFile = do
   Image{
       imageWidth = width
     , imageHeight = height
     , imageData = pixels
-    } <- loadImage file
+    } <- loadImage textureFile
 
   params@(texture', rect) <- tryPack atlas texture width height
 
@@ -135,10 +151,14 @@ loadTexture renderer@Renderer{
 
   let textures' = HashMap.insert name params textures
 
-  pure $ renderer {
+  let renderer' = renderer {
       rendererAtlasTexture = texture'
     , rendererTextures = textures'
     }
+  
+  case maybeSpritesheetFile of
+    Just spritesheetFile -> loadSpritesheet renderer' name spritesheetFile
+    Nothing -> pure renderer'
 
   where
     tryPack atlas texture width height = do
@@ -153,22 +173,62 @@ loadTexture renderer@Renderer{
                                               -- not very likely to happen, but check the size
                                               -- beforehand just in case
 
-getTexture :: Renderer -> String -> IO (GL.TextureObject, V4 Int)
+loadSpritesheet :: Renderer -> Text -> FilePath -> IO Renderer
+loadSpritesheet renderer@Renderer{
+    rendererSprites = sprites
+  } name file = do
+  maybeSpritesheet <- decode @Spritesheet <$> ByteString.readFile file
+  spritesheet <- case maybeSpritesheet of
+    Just x -> pure x
+    Nothing -> do
+      hPutStrLn stderr "spritesheet parse error!!!!!!"
+      exitFailure
+
+  let sprites' = HashMap.insert name spritesheet sprites
+
+  pure $ renderer {
+      rendererSprites = sprites'
+    }
+
+getTexture :: Renderer -> Text -> IO (GL.TextureObject, V4 Int)
 getTexture Renderer{ rendererTextures = textures } name = do
   let maybeParams = HashMap.lookup name textures
   case maybeParams of
     Just x -> pure x
     Nothing -> do
-      hPutStrLn stderr "wha??????? no tile???????????"
+      hPutStrLn stderr "wha??????? no texture???????????"
       exitFailure
 
-draw :: Renderer -> String -> V2 Float -> V2 Float -> IO ()
-draw renderer name
+getSpritesheet :: Renderer -> Text -> IO Spritesheet
+getSpritesheet renderer@Renderer{ rendererSprites = sprites } name = do
+  let maybeSpritesheet = HashMap.lookup name sprites
+  case maybeSpritesheet of
+    Just x -> pure x
+    Nothing -> do
+      hPutStrLn stderr "wha??????? no spritesheet???????????"
+      exitFailure
+
+makeQuad :: V4 Float -> V4 Float -> Vector Vertex
+makeQuad (V4 x y w h) (V4 tx ty tw th) =
+  Vector.fromList [
+    Vertex (V2 x y) (V2 tx ty) (V4 1 1 1 1),
+    Vertex (V2 (x + w) y) (V2 (tx + tw) ty) (V4 1 1 1 1),
+    Vertex (V2 x (y + h)) (V2 tx (ty + th)) (V4 1 1 1 1),
+    Vertex (V2 (x + w) (y + h)) (V2 (tx + tw) (ty + th)) (V4 1 1 1 1)
+    ]
+
+drawTexture :: Renderer -> Text -> V2 Float -> V2 Float -> IO ()
+drawTexture renderer name
   (V2 x y)
   (V2 w h) = do
-  (texture, rect) <- getTexture renderer name
+  (texture, textureRect) <- getTexture renderer name
 
-  let vertices = mkVertices rect
+  let
+    (V4
+      (fromIntegral -> tx) (fromIntegral -> ty)
+      (fromIntegral -> tw) (fromIntegral -> th)) = textureRect
+
+  let vertices = makeQuad (V4 x y w h) (V4 tx ty tw th)
 
   let
     vertexSize = sizeOf @Vertex undefined
@@ -184,15 +244,43 @@ draw renderer name
 
   GL.textureBinding GL.Texture2D $= Nothing
 
-  where
-    mkVertices (V4
+drawSprite :: Renderer -> Text -> Int -> V2 Float -> V2 Float -> IO ()
+drawSprite renderer name cell
+  (V2 x y)
+  (V2 w h) = do
+  (texture, textureRect) <- getTexture renderer name
+  spritesheet <- getSpritesheet renderer name
+
+  let
+    size = spritesheet.spritesheetCellSize
+    maybePos = spritesheet.spritesheetCells !? cell
+  pos <- case maybePos of
+    Just x -> pure x
+    Nothing -> do
+      hPutStrLn stderr "wha??????? no sprite???????????"
+      exitFailure
+
+  let
+    textureRect' = (over _xy (+ pos) . over _zw (const size)) textureRect
+    (V4
       (fromIntegral -> tx) (fromIntegral -> ty)
-      (fromIntegral -> tw) (fromIntegral -> th)) = Vector.fromList [
-      Vertex (V2 x y) (V2 tx ty) (V4 1 1 1 1),
-      Vertex (V2 (x + w) y) (V2 (tx + tw) ty) (V4 1 1 1 1),
-      Vertex (V2 x (y + h)) (V2 tx (ty + th)) (V4 1 1 1 1),
-      Vertex (V2 (x + w) (y + h)) (V2 (tx + tw) (ty + th)) (V4 1 1 1 1)
-      ]
+      (fromIntegral -> tw) (fromIntegral -> th)) = textureRect'
+  
+  let vertices = makeQuad (V4 x y w h) (V4 tx ty tw th)
+
+  let
+    vertexSize = sizeOf @Vertex undefined
+    verticesSize = fromIntegral $ vertexSize * Vector.length vertices
+
+  Vector.unsafeWith vertices $ \ptr ->
+    GL.bufferData GL.ArrayBuffer $= (verticesSize, ptr, GL.DynamicDraw)
+
+  GL.activeTexture $= GL.TextureUnit 0
+  GL.textureBinding GL.Texture2D $= Just texture
+
+  GL.drawElements GL.Triangles 6 GL.UnsignedInt nullPtr
+
+  GL.textureBinding GL.Texture2D $= Nothing
 
 updateViewport :: Renderer -> Int32 -> Int32 -> IO ()
 updateViewport Renderer{ rendererShader = maybeShader }

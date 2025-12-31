@@ -25,6 +25,7 @@ import Data.IntMap.Strict qualified as IntMap
 import Apecs
 
 import Game.Components
+import Game.Direction
 import Game.Server
 import Game.Server.World
 
@@ -69,7 +70,7 @@ tryLogin server netstatus conn name pass = do
         Just ent -> pure ent
 
 registerPlayer :: World -> LoginName -> IO Entity
-registerPlayer world name = runWith world $ newEntity (Player name, Position 0 0, Dirty)
+registerPlayer world name = runWith world $ newEntity (Player name, Position 0 0, Facing DOWN, Dirty)
 
 handleConnecting :: Server -> NetStatus -> Connection -> ClientMessage MessageFromClient -> IO (Connection, Maybe (ServerMessage MessageFromServer))
 handleConnecting server netstatus conn (Call id (TryLogin name pass)) =
