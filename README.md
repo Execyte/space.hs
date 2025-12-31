@@ -2,68 +2,36 @@
 
 [![Join our Discord server](https://img.shields.io/badge/join_our-Discord_server-5865F2?logo=discord&logoColor=white)](https://discord.gg/pPUXAZMMYN) [![Powered by Haskell](https://img.shields.io/badge/powered_by-Haskell-5D4F85?logo=haskell&logoColor=white)](https://haskell.org)
 
-Space.hs is a round-based game about surviving and maintaing a space station amongst many kinds of threats.
+Space.hs is a round-based game about surviving and maintaing a space station amidst many kinds of threats wanting to destroy it.
 
 # Building
-## Prerequisites
+Prerequisites before building:
 - [Git](https://git-scm.com/downloads)
 - [Stack](https://docs.haskellstack.org/en/stable/#how-to-install-stack)
 
-## Windows
-1. Install SDL2 and OpenAL using this command:
-    
-    ```
-    stack exec -- pacman -S mingw-w64-x86_64-pkgconf mingw-w64-x86_64-SDL2 mingw-w64-x86_64-openal
-    ```
-    
-    **NOTE:** If you already had Stack installed, you might want to update the package index first with the following commands:
+All you have to do to build is just to run `stack build` in the top level directory of the project. That produces 2 executables: `space-hs-client` and `space-hs-server`, which you can run with `stack exec [executable-name]`. More platform-specific build instructions below.
 
-    ```
-    stack exec -- pacman -Sy msys2-keyring
-    stack exec -- pacman -Syu
-    ```
-3. To build, run:
+### Windows
+Make sure to run these commands before installing the development libraries:
 
-    ```
-    stack build
-    ```
-    
-    This will produce two executables: `space-hs-client` and `space-hs-server`. Run them with the command:
+```
+stack exec -- pacman -Sy msys2-keyring
+stack exec -- pacman -Syu
+```
 
-    ```
-    stack exec [executable name]
-    ```
+Now you can do this:
 
-## macOS
-macOS building works similarly to Linux, please refer to stack docs for further information.
+```
+stack exec -- pacman -S mingw-w64-x86_64-pkgconf mingw-w64-x86_64-SDL2 mingw-w64-x86_64-openal
+```
 
-## Linux
-1. Install development libraries for SDL2 and OpenAL with your package manager.
-2. To build, run:
-    
-    ```
-    stack build
-    ```
-    
-    This will produce two executables: `space-hs-client` and `space-hs-server`. Run them with the command:
-
-    ```
-    stack exec [executable name]
-    ```
+### Linux
+Install the necessary development libraries for SDL2 and OpenAL with your package manager.
 
 # Hoogle
-1. To build Hoogle, run:
-```
-stack hoogle -- generate --local
-```
+Hoogle is a tool that allows you to search for functions using their name and/or type definitions.
 
-2. To run the Hoogle server, run:
-```
-stack hoogle -- server --local --port=8080
-```
+build Hoogle using `stack hoogle -- generate --local` then run the server with `stack hoogle -- server --local --port=8080` and access [it](localhost:8080) in your browser.
 
 # Haddock
-To auto-generate documentation for the game, you can use the following command (which will also build the game):
-```
-stack haddock --haddock-executables
-```
+If you want to generate code documentation, you can use the stack haddock command like so: `stack haddock --haddock-executables`, which will additionally also build the game if you haven't done it beforehand.
