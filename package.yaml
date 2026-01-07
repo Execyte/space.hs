@@ -21,93 +21,133 @@ description:         Please see the README on GitHub at <https://github.com/Tech
 
 dependencies:
 - base >= 4.7 && < 5
+
+## containers
 - array
-- bytestring
-- vector
-- lens
-- sdl2
-- apecs
-- linear
-- async
-- serialise
 - containers
 - unordered-containers
-- crypton
-- hourglass
-- memory
+- vector
+
+## text
+- bytestring
+- text
+
+## networking
 - tls
 - x509
 - quic
 - quic-simple
 - network
-- aeson
-- text
-- random
-- OpenAL
-- OpenGL
-- exceptions
-- StateVar
-- dear-imgui
-- unliftio
-- stm
+- serialise
+- crypton
+
+## extra I/O
 - extra
-- JuicyPixels
-- atlas
+- random
+- StateVar
+- exceptions
+- unliftio
+
+## memory
+- memory
 - primitive
 
-library:
-  source-dirs:
-  - assets
-  - src/shared
+## graphics
+- dear-imgui
+- sdl2
+- OpenAL
+- JuicyPixels
+- atlas
+
+## concurrency
+- async
+- stm
+
+## other stuff
+- lens
+- apecs # ECS
+- aeson # JSON
+- OpenGL # sound
+- linear # linear algebra
+- hourglass # time
 
 ghc-options: []
 
 default-extensions:
+## types
 - TypeFamilies
 - TypeFamilyDependencies
-- BangPatterns
-- KindSignatures
+
 - TypeOperators
+
 - DataKinds
-- QuasiQuotes
-- InstanceSigs
-- EmptyCase
-- LambdaCase
-- MultiWayIf
-- NamedFieldPuns
+- KindSignatures
+- PolyKinds
+- ConstraintKinds
+
+# records
 - DisambiguateRecordFields
 - DuplicateRecordFields
 - OverloadedRecordDot
 - RecordWildCards
-- TupleSections
+- NamedFieldPuns
+
+# deriving
 - DeriveFoldable
 - DeriveFunctor
 - DeriveGeneric
 - DeriveLift
 - DeriveTraversable
 - DerivingStrategies
+- DeriveDataTypeable
+- DeriveAnyClass
 - StandaloneDeriving
-- FlexibleContexts
-- FlexibleInstances
-- MultiParamTypeClasses
-- ScopedTypeVariables
-- TemplateHaskell
-- TypeApplications
 - GeneralizedNewtypeDeriving
-- OverloadedStrings
-- ConstraintKinds
-- RankNTypes
-- DefaultSignatures
-- PatternSynonyms
-- ExistentialQuantification
-- FunctionalDependencies
-- BlockArguments
-- ImportQualifiedPost
+
 - GADTs
+- GADTSyntax
+- ExistentialQuantification
 - ViewPatterns
 
+- FlexibleContexts
+- FlexibleInstances
+- InstanceSigs
+- DefaultSignatures
+
+- MultiParamTypeClasses
+- ScopedTypeVariables
+- RankNTypes
+
+- NoStarIsType # this should just be in base haskell lol
+- ExplicitForAll
+
+- TypeApplications
+- PatternSynonyms
+
+- FunctionalDependencies
+
+## syntax
+- BangPatterns
+- QuasiQuotes
+- TupleSections
+- TemplateHaskell
+
+- EmptyCase
+- LambdaCase
+- BlockArguments
+- MultiWayIf
+- ImportQualifiedPost
+
+- OverloadedStrings
+#- OverloadedLists # apparently this breaks SDL init
+
+library:
+  source-dirs:
+  - assets
+  - src/common
+
 executables:
-  space-hs-client:
+  client:
     main: Main.hs
     source-dirs:
     - app/client
@@ -118,7 +158,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - space-hs
-  space-hs-server:
+
+  server:
     main: Main.hs
     source-dirs:
     - app/server

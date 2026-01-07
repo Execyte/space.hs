@@ -9,7 +9,7 @@ Prerequisites before building:
 - [Git](https://git-scm.com/downloads)
 - [Stack](https://docs.haskellstack.org/en/stable/#how-to-install-stack)
 
-All you have to do to build is just to run `stack build` in the top level directory of the project. That produces 2 executables: `space-hs-client` and `space-hs-server`, which you can run with `stack exec [executable-name]`. More platform-specific build instructions below.
+All you have to do to build is just to run `stack build` in the top level directory of the project. That produces 2 executables: `client` and `server`, which you can run with `stack exec [executable-name]`. More platform-specific build instructions below.
 
 ### Windows
 Make sure to run these commands before installing the development libraries:
