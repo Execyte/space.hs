@@ -1,4 +1,4 @@
-module Game.Client.Renderer.Shader (
+module Game.Rendering.Shader (
   Shader,
   shaderFromByteStrings,
   shaderFromFiles,
@@ -67,3 +67,4 @@ setUniform shader name value = do
   uniform <- GL.uniformLocation shader name
   GL.uniform uniform $= value
   GL.currentProgram $= Nothing
+

@@ -1,24 +1,19 @@
-module Game.Server.Simulation (World, System', initWorld, step, act, packWorld, sendUpdatesToClients) where
+module Server.Simulating(initWorld, step, act, packWorld, sendUpdatesToClients) where
 
 import Apecs
-
-import Game
-import Game.Server.World
-
-import Data.Maybe
-import Data.IntMap.Strict(IntMap)
-import Data.IntMap.Strict qualified as IntMap
 
 import Control.Monad
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar
 
-import Network.Message
-import Network.Server
-import Network.Server.NetStatus
-import Network.Apecs.Snapshot
+import Common.Networking
+import Common.Networking.Message
+import Common.Networking.NetWorld
+import Common.World
 
-import Types
+import Server.State
+import Server.Networking.Status
+import Server.Simulating.World
 
 -- | Process the player's actions.
 act :: Entity -> Intent -> System' ()
@@ -34,7 +29,7 @@ step dT = pure ()
 
 sendUpdatesToClients :: NetStatus -> System' ()
 sendUpdatesToClients netstatus = do
-  dirties <- collect \(Dirty, ent@(Entity entId)) -> Just $ (ent, EntitySnapshot (ServerEntityId entId))
+  dirties <- collect \(Dirty, ent@(Entity entId)) -> Just (ent, EntitySnapshot (ServerEntityId entId))
   forM_ dirties \(ent, entitySnapshot) -> do
     componentSnapshot <- packComponentSnapshotFor ent
     modify ent \Dirty -> Not @Dirty

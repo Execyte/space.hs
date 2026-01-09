@@ -1,11 +1,23 @@
-module Network.Client.Manager(startClient) where
+module Game.Networking(processEvent, startClient, withNetEntity, getNetEntity, ConnectionStatus(..)) where
+
+import Apecs
+import Apecs.Experimental.Reactive
 
 import Control.Monad
+import Control.Monad.Extra
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TBQueue
 
-import Network.Message
+import Common.World
+import Common.Networking
+import Common.Networking.NetWorld
+import Common.Networking.Message
+
+import Game.State
+import Game.Simulating.World
+import Game.Networking.Connection
+
 import Network.QUIC.Simple qualified as QUIC
 import Network.Socket (HostName)
 
@@ -13,8 +25,33 @@ import Control.Concurrent.Async (async, cancel, link)
 
 import Data.IntMap.Strict qualified as IntMap
 import Data.IORef (newIORef, atomicModifyIORef')
+import Data.Text(Text)
 
 import Codec.Serialise(Serialise)
+
+withNetEntity :: ServerEntityId -> (Entity -> System' ()) -> System' ()
+withNetEntity netEntity f =
+  withReactive (enumLookup (NetEntity netEntity)) >>= \case
+    [localEntity] -> f localEntity
+    _ -> pure ()
+
+getNetEntity :: ServerEntityId -> System' (Maybe Entity)
+getNetEntity netEntity =
+  withReactive (enumLookup (NetEntity netEntity)) >>= \case
+    [localEntity] -> pure $ Just localEntity
+    _ -> pure Nothing
+
+processEntitySnapshot :: EntitySnapshot -> System' ()
+processEntitySnapshot (EntitySnapshot id snapshot) = do
+  ent <- getNetEntity id >>= (maybe (newEntity (NetEntity id)) pure)
+  set ent (snapshot.pos, snapshot.facing)
+
+processEvent' :: Client -> MessageFromServer -> World -> IO ()
+processEvent' client (EntitySnapshotPacket entSnapshot) = runSystem $ processEntitySnapshot entSnapshot
+processEvent' client (WorldSnapshotPacket (WorldSnapshot xs)) = runSystem $ mapM_ processEntitySnapshot xs
+
+processEvent :: Client -> MessageFromServer -> IO ()
+processEvent client evt = atomically (tryReadTMVar client.world) >>= maybe (pure ()) (processEvent' client evt)
 
 -- | Start the process of connecting to the server, setting up the appropriate queues and managing events/replies from the server.
 startClient :: (Serialise q, Serialise r)

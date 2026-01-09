@@ -1,4 +1,4 @@
-module Network.Server.NetStatus(
+module Server.Networking.Status(
   LoginName(..),
   ConnectionId(..),
 
@@ -9,12 +9,6 @@ module Network.Server.NetStatus(
 
   mkNetStatus,
   newNetStatus) where
-
-import Game.Intent(Intent)
-
-import Network.Message
-import Network.Types
-import Network.Apecs.Snapshot
 
 import GHC.Weak(Weak)
 import GHC.Num.Natural(Natural)
@@ -30,6 +24,11 @@ import Data.Map.Strict qualified as Map
 import Data.IntMap.Strict(IntMap)
 import Data.IntMap.Strict qualified as IntMap
 import Apecs(Entity)
+
+import Common.Networking
+import Common.Networking.NetWorld
+import Common.Networking.Message
+import Common.World
 
 newtype ConnectionId = ConnectionId Int deriving (Show, Eq, Ord)
 
@@ -53,11 +52,10 @@ data NetStatus = NetStatus
   , logins :: TVar (Map ConnectionId LoginName) -- ^ Actively logged in players, connId mapped to the logged in name.
   , conns :: TVar (IntMap (Weak ThreadId, Connection)) -- ^ The active connections.
   , actions :: TBQueue (Entity, Intent) -- ^ A queue that contains actions of the player.
-  , snapshots :: TVar (IntMap ComponentSnapshot) -- ^ A hashmap that contains last snapshots of every networked entity.
   }
 
 newNetStatus :: IO NetStatus
-newNetStatus = atomically $ mkNetStatus Map.empty Map.empty mempty 32 IntMap.empty
+newNetStatus = atomically $ mkNetStatus Map.empty Map.empty mempty 32
 
-mkNetStatus :: Map LoginName Entity -> Map ConnectionId LoginName -> IntMap (Weak ThreadId, Connection) -> Natural -> IntMap ComponentSnapshot -> STM NetStatus
-mkNetStatus players logins conns actions snapshots = NetStatus <$> newTVar players <*> newTVar logins <*> newTVar conns <*> newTBQueue actions <*> newTVar snapshots
+mkNetStatus :: Map LoginName Entity -> Map ConnectionId LoginName -> IntMap (Weak ThreadId, Connection) -> Natural -> STM NetStatus
+mkNetStatus players logins conns actions = NetStatus <$> newTVar players <*> newTVar logins <*> newTVar conns <*> newTBQueue actions

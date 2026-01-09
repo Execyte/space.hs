@@ -13,21 +13,18 @@ import Control.Monad.Extra(whenM)
 
 import Control.Exception(try, SomeException(..))
 
-import Network.Message
-import Network.Client
-import Network.Client.Manager
-import Network.Client.ConnectionStatus
+import Common.World
+import Common.Networking
+import Common.Networking.NetWorld
+import Common.Networking.Message
+
+import Game.Simulating.World
+import Game.Simulating
+import Game.Networking
 
 import Apecs
 
-import Types
-import Network.Types
-
 import Linear
-
-import Game.Client
-import Game.Client.World
-import Game.Components
 
 import Data.Text(Text, unpack, pack)
 
@@ -46,8 +43,8 @@ drawConnectMenu :: Client -> ConnectMenu -> IO ()
 drawConnectMenu client ConnectMenu{server_ip, username, password} = do
   connStatus <- readTVarIO client.connStatus
   case connStatus of
-    Connected _ -> pure ()
-    _           -> Im.withWindowOpen "connect to server" case connStatus of
+    Connected _ _ _ _   -> pure ()
+    _                   -> Im.withWindowOpen "connect to server" case connStatus of
         Disconnected str -> do
           Im.text "Server IP:"
           Im.sameLine
@@ -73,7 +70,7 @@ drawConnectMenu client ConnectMenu{server_ip, username, password} = do
           pure ()
             where
               tryLogin name pass world connStatus = do
-                (Connected (stop, call, _, _)) <- readTVarIO connStatus
+                (Connected{stop, call}) <- readTVarIO connStatus
                 void $ call (TryLogin (LoginName name) (Password pass)) >>= \(LoginStatusPacket status) -> case status of
                   LoginSuccess ent -> do
                     putStrLn $ "YAY! LOGIN SUCCESS! MY ENTITY NUMBER IS " <> (show ent)
@@ -87,11 +84,11 @@ drawConnectMenu client ConnectMenu{server_ip, username, password} = do
                     error "disconnect"
 
               downloadWorld client connStatus = do
-                (Connected (stop, call, _, _)) <- readTVarIO connStatus
+                (Connected{stop, call}) <- readTVarIO connStatus
                 void $ call RequestWorldSnapshot >>= \snapshot -> processEvent client snapshot
 
               pingLoop connStatus = do
-                (Connected (stop, call, _, _)) <- readTVarIO connStatus
+                (Connected{stop, call}) <- readTVarIO connStatus
                 void $ forkIO $ forever do
                   threadDelay 2000000
                   timeout 1000000 (try $ call Ping) >>= \case
@@ -107,11 +104,11 @@ drawConnectMenu client ConnectMenu{server_ip, username, password} = do
 
               tryStartClient hostname port f = do
                 void $ forkIO $ timeout 5000000 (startClient hostname port) >>= \case
-                  Just (stop, call, cast, pollEvent) -> f $ Connected (stop, call, cast, pollEvent)
+                  Just (stop, call, cast, flush) -> f $ Connected stop call cast flush
                   Nothing -> f $ Disconnected "no response from server"
                   
-              processEvents pollEvent = forkIO $ forever do
-                event <- pollEvent
+              processEvents flush = forkIO $ forever do
+                event <- flush
                 processEvent client event
 
               connectHandler server_ip username password world connStatus = do
@@ -119,7 +116,7 @@ drawConnectMenu client ConnectMenu{server_ip, username, password} = do
                 name <- readTVarIO username
                 pass <- readTVarIO password
                 tryStartClient (unpack hostname) "57355" \case
-                  Connected (stop_, call, cast, pollEvent) -> do
+                  Connected{stop=stop_, call, cast, flush} -> do
                     let
                       stop = do
                         void $ atomically $ tryTakeTMVar world
@@ -128,11 +125,11 @@ drawConnectMenu client ConnectMenu{server_ip, username, password} = do
                       stopManual = do
                         stop
                         atomically $ writeTVar connStatus $ Disconnected "manually disconnected from the server"
-                    atomically $ writeTVar connStatus $ Connected (stopManual, call, cast, pollEvent)
+                    atomically $ writeTVar connStatus $ Connected {stop=stopManual, call, cast, flush}
 
                     tryLogin name pass world connStatus
                     pingLoop connStatus
-                    void $ processEvents pollEvent
+                    void $ processEvents flush
                   Disconnected str -> atomically $ writeTVar connStatus $ Disconnected str
 
         Connecting -> do

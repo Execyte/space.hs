@@ -1,4 +1,4 @@
-module Game.Client.Renderer.Spritesheet (
+module Game.Rendering.Spritesheet (
   Spritesheet,
   spritesheetTexture,
   spritesheetCellSize,

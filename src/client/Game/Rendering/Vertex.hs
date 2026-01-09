@@ -1,4 +1,4 @@
-module Game.Client.Renderer.Vertex (
+module Game.Rendering.Vertex (
   VertexAttrib(..),
   VertexAttribs(..),
   Vertex(..),

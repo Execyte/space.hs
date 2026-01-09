@@ -1,28 +1,26 @@
-module Game.Client (Client(..), runGame, runDraw, initGame, step, draw) where
+module Game.Simulating (Client(..), runGame, runDraw, initGame, step, draw) where
 
 import SDL qualified
+
+import Game.Rendering qualified as Renderer
+import Game.Rendering (Renderer)
+import Game.Networking
+import Game.Textures
+import Game.State
+import Game.Simulating.World
+
+import Common.World
+import Common.Networking
+import Common.Networking.NetWorld
+import Common.Networking.Message
+
 import Apecs
+import Apecs.Experimental.Reactive
+
 import Linear
-
-import Game
-import Game.Client.World
-import Game.Client.Renderer(Renderer)
-import Game.Client.Renderer qualified as Renderer
-
-import Network.Message
-import Network.Client.ConnectionStatus
 
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TMVar
-
-import Data.IntMap.Strict(IntMap)
-
--- | The client datatype. This stores pretty much everything relevant to the client, especially the world and connection status.
-data Client = Client
-  { world :: TMVar World
-  , connStatus :: TVar (ConnectionStatus MessageFromClient MessageFromServer)
-  , renderer :: Renderer
-  }
 
 -- | Initialize the world and run the initialization function.
 initGame :: IO World

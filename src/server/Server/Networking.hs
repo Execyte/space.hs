@@ -1,19 +1,11 @@
-module Network.Server(handleConnecting, handleMessage) where
+module Server.Networking(handleConnecting, handleMessage) where
 
 import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar
-import Control.Concurrent.Async
-
-import Network.Message
-import Network.Types
-import Network.Server.NetStatus
-import Network.Apecs.Snapshot
-
-import Control.Concurrent
-import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TBQueue
+import Control.Concurrent.Async
 
 import Data.Text(Text)
 import Data.Text qualified as Text
@@ -21,21 +13,26 @@ import Data.Map.Strict(Map)
 import Data.Map.Strict qualified as Map
 import Data.IntMap.Strict(IntMap)
 import Data.IntMap.Strict qualified as IntMap
+import Data.Bifunctor(bimap)
 
 import Apecs
 
-import Game.Components
-import Game.Direction
-import Game.Server
-import Game.Server.World
+import Common.World
+import Common.Networking
+import Common.Networking.Message
+import Common.Networking.NetWorld
+
+import Server.State
+import Server.Networking.Status
+import Server.Simulating.World
 
 loginInfo :: Map.Map LoginName Password
-loginInfo = Map.fromList $ map (\(name, pass) -> (LoginName name, Password pass))
+loginInfo = Map.fromList $ map (bimap LoginName Password)
   [("test", "test"), ("test2", "test2")]
 
 -- TODO: download the map too
 handleCall :: Server -> NetStatus -> LoginName -> MessageFromClient -> IO (Maybe MessageFromServer)
-handleCall server _ _ RequestWorldSnapshot = readTVarIO server.world >>= (runSystem $ (Just . WorldSnapshotPacket) <$> packWorld)
+handleCall server _ _ RequestWorldSnapshot = readTVarIO server.world >>= (runSystem $ Just . WorldSnapshotPacket <$> packWorld)
 handleCall _ _ _ Ping = pure $ Just Pong
 handleCall _ _ _ _ = pure Nothing
 
@@ -55,7 +52,7 @@ tryLogin server netstatus conn name pass = do
   world <- readTVarIO server.world
   case Map.lookup name loginInfo of
     Just acctPass | checkPass acctPass pass -> do
-      atomically $ modifyTVar' netstatus.logins \logins -> Map.insert (ConnectionId conn.connId) name logins
+      atomically $ modifyTVar' netstatus.logins $ Map.insert (ConnectionId conn.connId) name
       ent <- tryMakeEntity world netstatus name
       (pure . Just . LoginStatusPacket) $ LoginSuccess $ unEntity ent
     _ -> pure Nothing
@@ -65,7 +62,7 @@ tryLogin server netstatus conn name pass = do
       case Map.lookup name players of
         Nothing -> do
           ent <- registerPlayer world name
-          atomically $ modifyTVar' netstatus.players \players -> Map.insert name ent players
+          atomically $ modifyTVar' netstatus.players $ Map.insert name ent
           pure ent
         Just ent -> pure ent
 
@@ -83,7 +80,7 @@ handleConnecting server netstatus conn (Call id (TryLogin name pass)) =
 handleConnecting _ _ conn _ = pure (conn, Nothing)
 
 handleMessage :: Server -> NetStatus -> Connection -> ClientMessage MessageFromClient -> IO (Connection, Maybe (ServerMessage MessageFromServer))
-handleMessage server netstatus conn@Connection{connStatus=(LoggedIn name)} (Call id msg') = (conn,) . (Reply id <$>) <$> (handleCall server netstatus name msg')
+handleMessage server netstatus conn@Connection{connStatus=(LoggedIn name)} (Call id msg') = (conn,) . (Reply id <$>) <$> handleCall server netstatus name msg'
 handleMessage server netstatus conn@Connection{connStatus=(LoggedIn name)} (Cast msg') = do
   handleCast server netstatus name msg'
   pure (conn, Nothing)

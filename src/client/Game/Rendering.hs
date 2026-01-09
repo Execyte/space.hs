@@ -1,4 +1,4 @@
-module Game.Client.Renderer (
+module Game.Rendering (
   Renderer,
   rendererWindow,
   rendererShader,
@@ -24,10 +24,6 @@ module Game.Client.Renderer (
   updateViewport,
   m44ToGL,
   loadImage,
-
-  module Game.Client.Renderer.Shader,
-  module Game.Client.Renderer.Vertex,
-  module Game.Client.Renderer.Spritesheet
 ) where
 
 import Data.Int
@@ -56,9 +52,9 @@ import Data.StateVar
 import Graphics.Rendering.OpenGL.GL qualified as GL
 import SDL qualified
 
-import Game.Client.Renderer.Shader
-import Game.Client.Renderer.Vertex
-import Game.Client.Renderer.Spritesheet
+import Game.Rendering.Shader
+import Game.Rendering.Spritesheet
+import Game.Rendering.Vertex
 
 -- TODO: we shouldn't need access to the constructor and fields, make rendering possible without
 -- having to access those
@@ -316,3 +312,4 @@ loadImage file = do
       exitFailure
     Right (ImageRGBA8 image) -> pure image
     Right image -> pure $ convertRGBA8 image
+

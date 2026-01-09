@@ -7,9 +7,6 @@ import Control.Concurrent.STM.TVar
 import Control.Concurrent.Async
 
 import Network.QUIC.Simple qualified as QUIC
-import Network.Server
-import Network.Server.NetStatus
-import Network.Message
 
 import Data.Text(Text, unpack, pack)
 import Data.IntMap.Strict qualified as IntMap
@@ -22,9 +19,11 @@ import Codec.Serialise(Serialise)
 
 import Apecs
 
-import Game.Server
-import Game.Server.Simulation
-import Game.Server.World
+import Server.State
+import Server.Networking
+import Server.Networking.Status
+import Server.Simulating
+import Server.Simulating.World
 
 -- TODO: fix memory leak relating to connected users not being removed after a certain time of not pinging
 main :: IO ()
@@ -54,7 +53,7 @@ main = do
     world' <- readTVarIO server.world
     mAction <- atomically $ tryReadTBQueue netstatus.actions
     Apecs.runWith world' $ do
-      for_ mAction \(ent, action) -> act ent action
+      for_ mAction $ uncurry act
       step (1/60)
       sendUpdatesToClients netstatus
 

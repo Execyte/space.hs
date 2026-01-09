@@ -1,11 +1,12 @@
-module Game.Server.World(World, System', initWorld, packComponentSnapshotFor, packWorld) where
+module Server.Simulating.World(World, System', initWorld, packComponentSnapshotFor, packWorld) where
 
 import Apecs
-import Game.Components
-import Network.Apecs.Snapshot
 import Control.Monad(foldM)
 import Data.Functor((<&>))
-import Types
+
+import Common.Networking
+import Common.Networking.NetWorld
+import Common.World
 
 foldMapM f = foldM (\acc x -> (<>) acc <$> f x) mempty
 
@@ -20,6 +21,6 @@ packComponentSnapshotFor ent = ComponentSnapshot
 
 packWorld :: System' WorldSnapshot
 packWorld = do
-  ents <- collect \(Position _ _, ent@(Entity entId)) -> Just $ (ent, EntitySnapshot (ServerEntityId entId))
+  ents <- collect \(Position _ _, ent@(Entity entId)) -> Just (ent, EntitySnapshot (ServerEntityId entId))
   entSnapshots <- foldMapM (\(ent, entitySnapshot) -> packComponentSnapshotFor ent <&> \componentSnapshot -> [entitySnapshot componentSnapshot]) ents
   pure $ WorldSnapshot entSnapshots

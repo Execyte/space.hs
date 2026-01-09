@@ -25,64 +25,66 @@ source-repository head
 
 library
   exposed-modules:
-      Game
-      Game.Components
-      Game.Direction
-      Game.Intent
-      Network.Apecs.Snapshot
-      Network.Message
-      Network.Types
-      Types
+      Common.Networking
+      Common.Networking.Message
+      Common.Networking.NetWorld
+      Common.World
   other-modules:
       Paths_space_hs
   autogen-modules:
       Paths_space_hs
   hs-source-dirs:
       assets
-      src/shared
+      src/common
   default-extensions:
       TypeFamilies
       TypeFamilyDependencies
-      BangPatterns
-      KindSignatures
       TypeOperators
       DataKinds
-      QuasiQuotes
-      InstanceSigs
-      EmptyCase
-      LambdaCase
-      MultiWayIf
-      NamedFieldPuns
+      KindSignatures
+      PolyKinds
+      ConstraintKinds
       DisambiguateRecordFields
       DuplicateRecordFields
       OverloadedRecordDot
       RecordWildCards
-      TupleSections
+      NamedFieldPuns
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
       DeriveLift
       DeriveTraversable
       DerivingStrategies
+      DeriveDataTypeable
+      DeriveAnyClass
       StandaloneDeriving
+      GeneralizedNewtypeDeriving
+      GADTs
+      GADTSyntax
+      ExistentialQuantification
+      ViewPatterns
       FlexibleContexts
       FlexibleInstances
+      InstanceSigs
+      DefaultSignatures
       MultiParamTypeClasses
       ScopedTypeVariables
-      TemplateHaskell
-      TypeApplications
-      GeneralizedNewtypeDeriving
-      OverloadedStrings
-      ConstraintKinds
       RankNTypes
-      DefaultSignatures
+      NoStarIsType
+      ExplicitForAll
+      TypeApplications
       PatternSynonyms
-      ExistentialQuantification
       FunctionalDependencies
+      BangPatterns
+      QuasiQuotes
+      TupleSections
+      TemplateHaskell
+      EmptyCase
+      LambdaCase
       BlockArguments
+      MultiWayIf
       ImportQualifiedPost
-      GADTs
-      ViewPatterns
+      OverloadedStrings
   build-depends:
       JuicyPixels
     , OpenAL
@@ -120,20 +122,21 @@ library
     , x509
   default-language: Haskell2010
 
-executable space-hs-client
+executable client
   main-is: Main.hs
   other-modules:
-      Game.Client
-      Game.Client.Renderer
-      Game.Client.Renderer.Shader
-      Game.Client.Renderer.Spritesheet
-      Game.Client.Renderer.Vertex
-      Game.Client.World
+      Game.Networking
+      Game.Networking.Connection
+      Game.Rendering
+      Game.Rendering.Shader
+      Game.Rendering.Spritesheet
+      Game.Rendering.Vertex
+      Game.Simulating
+      Game.Simulating.World
+      Game.State
+      Game.Textures
       Game.UI.ConnectMenu
       Im
-      Network.Client
-      Network.Client.ConnectionStatus
-      Network.Client.Manager
       Paths_space_hs
   autogen-modules:
       Paths_space_hs
@@ -143,46 +146,52 @@ executable space-hs-client
   default-extensions:
       TypeFamilies
       TypeFamilyDependencies
-      BangPatterns
-      KindSignatures
       TypeOperators
       DataKinds
-      QuasiQuotes
-      InstanceSigs
-      EmptyCase
-      LambdaCase
-      MultiWayIf
-      NamedFieldPuns
+      KindSignatures
+      PolyKinds
+      ConstraintKinds
       DisambiguateRecordFields
       DuplicateRecordFields
       OverloadedRecordDot
       RecordWildCards
-      TupleSections
+      NamedFieldPuns
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
       DeriveLift
       DeriveTraversable
       DerivingStrategies
+      DeriveDataTypeable
+      DeriveAnyClass
       StandaloneDeriving
+      GeneralizedNewtypeDeriving
+      GADTs
+      GADTSyntax
+      ExistentialQuantification
+      ViewPatterns
       FlexibleContexts
       FlexibleInstances
+      InstanceSigs
+      DefaultSignatures
       MultiParamTypeClasses
       ScopedTypeVariables
-      TemplateHaskell
-      TypeApplications
-      GeneralizedNewtypeDeriving
-      OverloadedStrings
-      ConstraintKinds
       RankNTypes
-      DefaultSignatures
+      NoStarIsType
+      ExplicitForAll
+      TypeApplications
       PatternSynonyms
-      ExistentialQuantification
       FunctionalDependencies
+      BangPatterns
+      QuasiQuotes
+      TupleSections
+      TemplateHaskell
+      EmptyCase
+      LambdaCase
       BlockArguments
+      MultiWayIf
       ImportQualifiedPost
-      GADTs
-      ViewPatterns
+      OverloadedStrings
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels
@@ -222,14 +231,14 @@ executable space-hs-client
     , x509
   default-language: Haskell2010
 
-executable space-hs-server
+executable server
   main-is: Main.hs
   other-modules:
-      Game.Server
-      Game.Server.Simulation
-      Game.Server.World
-      Network.Server
-      Network.Server.NetStatus
+      Server.Networking
+      Server.Networking.Status
+      Server.Simulating
+      Server.Simulating.World
+      Server.State
       Paths_space_hs
   autogen-modules:
       Paths_space_hs
@@ -239,46 +248,52 @@ executable space-hs-server
   default-extensions:
       TypeFamilies
       TypeFamilyDependencies
-      BangPatterns
-      KindSignatures
       TypeOperators
       DataKinds
-      QuasiQuotes
-      InstanceSigs
-      EmptyCase
-      LambdaCase
-      MultiWayIf
-      NamedFieldPuns
+      KindSignatures
+      PolyKinds
+      ConstraintKinds
       DisambiguateRecordFields
       DuplicateRecordFields
       OverloadedRecordDot
       RecordWildCards
-      TupleSections
+      NamedFieldPuns
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
       DeriveLift
       DeriveTraversable
       DerivingStrategies
+      DeriveDataTypeable
+      DeriveAnyClass
       StandaloneDeriving
+      GeneralizedNewtypeDeriving
+      GADTs
+      GADTSyntax
+      ExistentialQuantification
+      ViewPatterns
       FlexibleContexts
       FlexibleInstances
+      InstanceSigs
+      DefaultSignatures
       MultiParamTypeClasses
       ScopedTypeVariables
-      TemplateHaskell
-      TypeApplications
-      GeneralizedNewtypeDeriving
-      OverloadedStrings
-      ConstraintKinds
       RankNTypes
-      DefaultSignatures
+      NoStarIsType
+      ExplicitForAll
+      TypeApplications
       PatternSynonyms
-      ExistentialQuantification
       FunctionalDependencies
+      BangPatterns
+      QuasiQuotes
+      TupleSections
+      TemplateHaskell
+      EmptyCase
+      LambdaCase
       BlockArguments
+      MultiWayIf
       ImportQualifiedPost
-      GADTs
-      ViewPatterns
+      OverloadedStrings
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       JuicyPixels

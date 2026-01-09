@@ -28,16 +28,25 @@ import DearImGui.SDL.OpenGL
 import Graphics.Rendering.OpenGL.GL qualified as GL
 import SDL qualified
 
-import Game.Direction
-import Game.Intent
-import Game.Client
-import Game.Client.World
-import Game.UI.ConnectMenu
-import Network.Message
-import Network.Client.ConnectionStatus
+import Common.Networking
+import Common.Networking.NetWorld
+import Common.Networking.Message
+import Common.World
 
-import Game.Client.Renderer qualified as Renderer
-import Game.Client.Renderer (Renderer(..), Vertex(..))
+import Game.State
+import Game.Networking
+import Game.Networking.Connection
+import Game.Simulating
+import Game.Simulating.World
+import Game.Rendering.Vertex qualified as Renderer
+import Game.Rendering.Spritesheet qualified as Renderer
+import Game.Rendering.Shader qualified as Renderer
+import Game.Rendering qualified as Renderer
+import Game.Rendering.Vertex (Vertex)
+import Game.Rendering (Renderer(..))
+
+import Game.UI.ConnectMenu
+
 import Im qualified
 
 -- TODO: move everything out of Main eventually
@@ -62,7 +71,7 @@ indices = Vector.fromList [0, 1, 2, 1, 2, 3]
 action :: Client -> Intent -> IO ()
 action Client{connStatus} Quit = exitSuccess
 action Client{connStatus} x = readTVarIO connStatus >>= \case
-  Connected (_, _, event, _) -> event (ActionPacket x)
+  Connected {cast} -> cast (ActionPacket x)
   _ -> pure ()
 
 intentFromKey :: SDL.KeyboardEventData -> Maybe Intent
@@ -172,7 +181,7 @@ loop client@Client{world, renderer} buildUI = forever do
                               -- that kinda shit
   GL.bindVertexArrayObject $= Just vertexArray
 
-  (atomically $ tryReadTMVar world) >>= \case
+  atomically (tryReadTMVar world) >>= \case
     Just world' -> renderGame world' renderer
     Nothing -> pure ()
   GL.bindVertexArrayObject $= Nothing
@@ -318,7 +327,7 @@ main = do
     renderer = renderer'''
   }
 
-  connectMenu <- atomically $ newConnectMenu
+  connectMenu <- atomically newConnectMenu
   let drawUI = drawConnectMenu client connectMenu
 
   void $ forkIO do
