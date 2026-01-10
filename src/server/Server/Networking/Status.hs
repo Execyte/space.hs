@@ -30,6 +30,8 @@ import Common.Networking.NetWorld
 import Common.Networking.Message
 import Common.World
 
+import Data.Hourglass.Epoch
+
 newtype ConnectionId = ConnectionId Int deriving (Show, Eq, Ord)
 
 -- | The connection status between the server and a client.
@@ -44,6 +46,7 @@ data Connection = Connection
   { writeQueue :: TBQueue (ServerMessage MessageFromServer) -- ^ The write queue contains data that needs to be sent to the client. This is where you would write server to client messages.
   , connId :: Int
   , connStatus :: ConnectionStatus
+  , lastPingTime :: UnixEpoch -- TODO: initialize this, check it every game step, kick the client out when it's more than 30 minutes
   }
 
 -- | This is where all information about the server's network is stored.

@@ -5,9 +5,9 @@ import SDL qualified
 import Game.Rendering qualified as Renderer
 import Game.Rendering (Renderer)
 import Game.Networking
-import Game.Textures
 import Game.State
 import Game.Simulating.World
+import Game.TextureCollection
 
 import Common.World
 import Common.Networking

@@ -1,9 +1,9 @@
 module Game.State(Client(..)) where
 
 import Game.Rendering
-import Game.Textures
 import Game.Networking.Connection
 import Game.Simulating.World
+import Game.TextureCollection
 
 import Common.World
 import Common.Networking

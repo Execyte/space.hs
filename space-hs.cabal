@@ -29,6 +29,7 @@ library
       Common.Networking.Message
       Common.Networking.NetWorld
       Common.World
+      Common.World.Tiles
   other-modules:
       Paths_space_hs
   autogen-modules:
@@ -134,7 +135,7 @@ executable client
       Game.Simulating
       Game.Simulating.World
       Game.State
-      Game.Textures
+      Game.TextureCollection
       Game.UI.ConnectMenu
       Im
       Paths_space_hs
@@ -234,6 +235,7 @@ executable client
 executable server
   main-is: Main.hs
   other-modules:
+      Server
       Server.Networking
       Server.Networking.Status
       Server.Simulating

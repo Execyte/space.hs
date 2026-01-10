@@ -1,8 +1,6 @@
-module Game.Textures(Texture(..), Textures(..)) where
+module Game.TextureCollection(TextureCollection(..)) where
 
-data Texture = Texture
-
-data Textures a = Textures
+data TextureCollection a = TextureCollection
   { floor :: a
   , wall :: a
   , humanFacingUp, humanFacingDown, humanFacingLeft, humanFacingRight :: a

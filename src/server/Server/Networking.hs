@@ -32,7 +32,7 @@ loginInfo = Map.fromList $ map (bimap LoginName Password)
 
 -- TODO: download the map too
 handleCall :: Server -> NetStatus -> LoginName -> MessageFromClient -> IO (Maybe MessageFromServer)
-handleCall server _ _ RequestWorldSnapshot = readTVarIO server.world >>= (runSystem $ Just . WorldSnapshotPacket <$> packWorld)
+handleCall server _ _ RequestWorldSnapshot = readTVarIO server.svWorld >>= (runSystem $ Just . WorldSnapshotPacket <$> packWorld)
 handleCall _ _ _ Ping = pure $ Just Pong
 handleCall _ _ _ _ = pure Nothing
 
@@ -49,7 +49,7 @@ checkPass = (==)
 
 tryLogin :: Server -> NetStatus -> Connection -> LoginName -> Password -> IO (Maybe MessageFromServer)
 tryLogin server netstatus conn name pass = do
-  world <- readTVarIO server.world
+  world <- readTVarIO server.svWorld
   case Map.lookup name loginInfo of
     Just acctPass | checkPass acctPass pass -> do
       atomically $ modifyTVar' netstatus.logins $ Map.insert (ConnectionId conn.connId) name
